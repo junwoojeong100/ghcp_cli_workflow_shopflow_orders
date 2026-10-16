@@ -1,0 +1,18 @@
+name: Deploy
+on:
+  push:
+    tags: ["v*"]
+jobs:
+  staging:
+    runs-on: ubuntu-latest
+    environment: staging          # 자동 배포
+    steps:
+      - uses: actions/checkout@v4
+      - run: echo "staging 배포 (예: az containerapp update …) 후 스모크 테스트"
+  production:
+    needs: staging
+    runs-on: ubuntu-latest
+    environment: production       # Environment 보호 규칙: Required reviewers → 담당자 승인 후에만 실행
+    steps:
+      - uses: actions/checkout@v4
+      - run: echo "production 배포 — 승인된 담당자만 이 단계를 실행할 수 있음"
