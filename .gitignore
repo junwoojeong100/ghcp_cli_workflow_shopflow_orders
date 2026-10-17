@@ -9,3 +9,4 @@ logs/*.log
 .copilot-audit/
 .demo/
 *.pyc
+.DS_Store

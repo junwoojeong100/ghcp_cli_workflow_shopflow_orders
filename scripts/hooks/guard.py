@@ -8,6 +8,7 @@
 에이전트에게 "하지 마세요"라고 부탁하는 것이 아니라, 도구 호출 직전에 코드가 검사한다.
 이 파일은 보호 경로이므로 에이전트가 수정할 수 없다.
 """
+
 import json
 import os
 import re
@@ -64,17 +65,40 @@ PROD_DEPLOY_REASON = (
     "담당자의 명시적 승인이 필요합니다. (staging 스모크 테스트 통과·코드 승인 기록은 스크립트가 다시 검증합니다)"
 )
 
-WRITE_TOOLS = {"create", "edit", "write", "str_replace_editor", "str_replace", "multi_edit", "apply_patch"}
+WRITE_TOOLS = {
+    "create",
+    "edit",
+    "write",
+    "str_replace_editor",
+    "str_replace",
+    "multi_edit",
+    "apply_patch",
+}
 SHELL_TOOLS = {"bash", "powershell", "shell"}
 
 DANGEROUS = [
-    (re.compile(r"\bgit\s+push\b"), "git push 는 정책상 금지입니다. (원격 반영은 사람이 PR 승인 후 수행)"),
-    (re.compile(r"\bgit\s+reset\s+--hard\b|\bgit\s+clean\s+-[a-z]*f"), "작업 내용을 되돌릴 수 없는 git 명령은 금지입니다."),
-    (re.compile(r"\brm\s+(-[a-zA-Z]*r[a-zA-Z]*f|-[a-zA-Z]*f[a-zA-Z]*r)\b"), "재귀 강제 삭제(rm -rf)는 금지입니다."),
+    (
+        re.compile(r"\bgit\s+push\b"),
+        "git push 는 정책상 금지입니다. (원격 반영은 사람이 PR 승인 후 수행)",
+    ),
+    (
+        re.compile(r"\bgit\s+reset\s+--hard\b|\bgit\s+clean\s+-[a-z]*f"),
+        "작업 내용을 되돌릴 수 없는 git 명령은 금지입니다.",
+    ),
+    (
+        re.compile(r"\brm\s+(-[a-zA-Z]*r[a-zA-Z]*f|-[a-zA-Z]*f[a-zA-Z]*r)\b"),
+        "재귀 강제 삭제(rm -rf)는 금지입니다.",
+    ),
     (re.compile(r"\bsudo\b"), "관리자 권한 실행(sudo)은 금지입니다."),
     (re.compile(r"--no-verify\b"), "검증 우회(--no-verify)는 금지입니다."),
-    (re.compile(r"bootstrap_env|demo_reset"), "데모 초기화·환경 구성 스크립트는 진행자(사람)만 실행합니다."),
-    (re.compile(r"\b(curl|wget)\b[^|;]*\|\s*(ba)?sh\b"), "원격 스크립트를 바로 실행하는 명령은 금지입니다."),
+    (
+        re.compile(r"bootstrap_env|demo_reset"),
+        "데모 초기화·환경 구성 스크립트는 진행자(사람)만 실행합니다.",
+    ),
+    (
+        re.compile(r"\b(curl|wget)\b[^|;]*\|\s*(ba)?sh\b"),
+        "원격 스크립트를 바로 실행하는 명령은 금지입니다.",
+    ),
 ]
 REDIRECT_NOISE = re.compile(r"\d*>&\d+|\d*>>?\s*/dev/null|&>\s*/dev/null")
 WRITE_VERBS = re.compile(
@@ -87,7 +111,10 @@ GIT_WRITE = re.compile(
 INSTALLERS = re.compile(r"\b(pip3?|npm|yarn|brew|apt|apt-get)\s+(install|add|remove|uninstall)\b")
 INTERPRETERS = re.compile(r"(^|[\s;&|(])(python3?|node|perl|ruby|php)\s|\b(ba)?sh\s+-c\b")
 NETWORK = re.compile(r"\b(curl|wget|nc|ssh|scp)\b")
-SQL_WRITE = re.compile(r"\b(insert|update|delete|drop|alter|create|replace|attach|pragma\s+writable)\b|\.shell|\.system", re.I)
+SQL_WRITE = re.compile(
+    r"\b(insert|update|delete|drop|alter|create|replace|attach|pragma\s+writable)\b|\.shell|\.system",
+    re.I,
+)
 
 
 def load_payload() -> dict:
@@ -121,7 +148,9 @@ def rel(path: str, cwd: str) -> str:
 def write_targets(tool: str, args: dict, cwd: str) -> list[str]:
     if tool == "apply_patch":
         text = args.get("_raw") or args.get("patch") or args.get("input") or ""
-        found = re.findall(r"^\*\*\* (?:Add|Update|Delete) File:\s*(.+)$|^\*\*\* Move to:\s*(.+)$", text, re.M)
+        found = re.findall(
+            r"^\*\*\* (?:Add|Update|Delete) File:\s*(.+)$|^\*\*\* Move to:\s*(.+)$", text, re.M
+        )
         return [rel((a or b).strip(), cwd) for a, b in found]
     path = args.get("path") or args.get("file_path") or args.get("filePath")
     return [rel(path, cwd)] if path else []
@@ -149,7 +178,9 @@ PY_WRITE = re.compile(
 
 def has_shell_write(cmd: str) -> bool:
     bare = REDIRECT_NOISE.sub("", strip_quoted(cmd))
-    return bool(">" in bare or WRITE_VERBS.search(bare) or SED_INPLACE.search(bare) or PY_WRITE.search(cmd))
+    return bool(
+        ">" in bare or WRITE_VERBS.search(bare) or SED_INPLACE.search(bare) or PY_WRITE.search(cmd)
+    )
 
 
 def mentioned_prefixes(cmd: str, prefixes) -> list[str]:
@@ -191,16 +222,25 @@ def decide(role: str, tool: str, args: dict, cwd: str) -> tuple[str, str]:
         for target in targets:
             for prefix in PROTECTED:
                 if target == prefix.rstrip("/") or target.startswith(prefix):
-                    return "deny", f"보호된 경로입니다 ({prefix}) — 에이전트 정의·훅·표준·승인 기록은 사람만 변경할 수 있습니다."
+                    return (
+                        "deny",
+                        f"보호된 경로입니다 ({prefix}) — 에이전트 정의·훅·표준·승인 기록은 사람만 변경할 수 있습니다.",
+                    )
         scope = ROLE_WRITE_SCOPE.get(role)
         if scope:
             for target in targets:
                 if not target.startswith(scope):
-                    return "deny", f"[{ROLE_LABEL.get(role, role)}] 에이전트의 수정 가능 범위는 {', '.join(scope)} 입니다. ({target} 는 범위 밖)"
+                    return (
+                        "deny",
+                        f"[{ROLE_LABEL.get(role, role)}] 에이전트의 수정 가능 범위는 {', '.join(scope)} 입니다. ({target} 는 범위 밖)",
+                    )
         if any(t.startswith(GATED_CODE_PATHS) for t in targets):
             ok, message = design_approved()
             if not ok:
-                return "deny", f"설계 승인(①) 전에는 app/·db/migrations/ 를 수정할 수 없습니다. {message}"
+                return (
+                    "deny",
+                    f"설계 승인(①) 전에는 app/·db/migrations/ 를 수정할 수 없습니다. {message}",
+                )
         return "allow", ""
 
     if tool in SHELL_TOOLS:
@@ -225,17 +265,29 @@ def decide(role: str, tool: str, args: dict, cwd: str) -> tuple[str, str]:
             if mentioned_prefixes(cmd, GATED_CODE_PATHS):
                 ok, message = design_approved()
                 if not ok:
-                    return "deny", f"설계 승인(①) 전에는 app/·db/migrations/ 를 수정할 수 없습니다. {message}"
+                    return (
+                        "deny",
+                        f"설계 승인(①) 전에는 app/·db/migrations/ 를 수정할 수 없습니다. {message}",
+                    )
 
         if role in READ_ONLY_ROLES:
             label = ROLE_LABEL.get(role, role)
             bare = strip_quoted(cmd)
             if writes or GIT_WRITE.search(bare) or INSTALLERS.search(bare):
-                return "deny", f"[{label}] 에이전트는 읽기 전용입니다. 파일 변경·git 변경·설치 명령은 허용되지 않습니다."
+                return (
+                    "deny",
+                    f"[{label}] 에이전트는 읽기 전용입니다. 파일 변경·git 변경·설치 명령은 허용되지 않습니다.",
+                )
             if INTERPRETERS.search(bare) or NETWORK.search(bare):
-                return "deny", f"[{label}] 에이전트는 코드 실행·네트워크 접근이 허용되지 않습니다. (조회는 grep/sqlite3 -readonly 사용)"
+                return (
+                    "deny",
+                    f"[{label}] 에이전트는 코드 실행·네트워크 접근이 허용되지 않습니다. (조회는 grep/sqlite3 -readonly 사용)",
+                )
             if re.search(r"\bsqlite3\b", cmd) and ("-readonly" not in cmd or SQL_WRITE.search(cmd)):
-                return "deny", f"[{label}] 에이전트는 DB를 읽기 전용(-readonly, SELECT)으로만 조회할 수 있습니다."
+                return (
+                    "deny",
+                    f"[{label}] 에이전트는 DB를 읽기 전용(-readonly, SELECT)으로만 조회할 수 있습니다.",
+                )
         return "allow", ""
 
     return "allow", ""
@@ -259,13 +311,24 @@ def main() -> int:
     target = (
         command_text(args)
         or ", ".join(write_targets(tool, args, cwd))
-        or str(args.get("path") or args.get("pattern") or args.get("question") or args.get("agent_type") or "")
+        or str(
+            args.get("path")
+            or args.get("pattern")
+            or args.get("question")
+            or args.get("agent_type")
+            or ""
+        )
     )
     if not no_audit or decision != "allow":
         audit(role if no_audit else "global", tool, target, decision, reason)
 
     if decision != "allow":
-        print(json.dumps({"permissionDecision": decision, "permissionDecisionReason": reason}, ensure_ascii=False))
+        print(
+            json.dumps(
+                {"permissionDecision": decision, "permissionDecisionReason": reason},
+                ensure_ascii=False,
+            )
+        )
     return 0
 
 

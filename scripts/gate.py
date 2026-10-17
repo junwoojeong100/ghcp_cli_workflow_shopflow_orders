@@ -9,6 +9,7 @@
 'request' 는 훅(scripts/hooks/guard.py)이 항상 사람에게 확인을 요청하도록 강제한다.
 즉 이 기록은 사람이 승인 프롬프트에서 Yes 를 눌러야만 생성된다.
 """
+
 import getpass
 import hashlib
 import json
@@ -53,7 +54,11 @@ def record_path(cr: str, gate: str) -> Path:
 def write_record(cr: str, gate: str, data: dict) -> Path:
     path = record_path(cr, gate)
     path.parent.mkdir(parents=True, exist_ok=True)
-    payload = {"cr": cr, "gate": gate, "at": datetime.now().astimezone().isoformat(timespec="seconds")}
+    payload = {
+        "cr": cr,
+        "gate": gate,
+        "at": datetime.now().astimezone().isoformat(timespec="seconds"),
+    }
     payload.update(data)
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return path
@@ -90,19 +95,27 @@ def cmd_request(gate: str, cr: str) -> int:
             return 1
         data = {"artifact": str(doc.relative_to(ROOT)), "sha256": sha256_file(doc)}
     elif gate == "code":
-        missing = [n for n in ("04-test-report.md", "05-review-report.md") if not (ROOT / "docs" / "cr" / cr / n).exists()]
+        missing = [
+            n
+            for n in ("04-test-report.md", "05-review-report.md")
+            if not (ROOT / "docs" / "cr" / cr / n).exists()
+        ]
         if missing:
             print(f"✗ 코드 승인 전에 필요한 산출물이 없습니다: {', '.join(missing)}")
             return 1
         data = {"artifact": "app/ + db/migrations/", "code_sha256": code_hash()}
     else:
-        print("✗ request 는 design | code 만 지원합니다. (운영 배포 승인은 deploy.sh production 실행 시점에 받습니다)")
+        print(
+            "✗ request 는 design | code 만 지원합니다. (운영 배포 승인은 deploy.sh production 실행 시점에 받습니다)"
+        )
         return 1
     data["approver"] = approver()
     path = write_record(cr, gate, data)
     print(f"✔ {GATE_TITLES[gate]} 기록 완료 — 승인자: {data['approver']}")
     print(f"  기록 파일: {path.relative_to(ROOT)}")
-    print(f"  무결성 해시: {(data.get('sha256') or data.get('code_sha256'))[:16]}…  (승인 후 변경되면 무효)")
+    print(
+        f"  무결성 해시: {(data.get('sha256') or data.get('code_sha256'))[:16]}…  (승인 후 변경되면 무효)"
+    )
     return 0
 
 
@@ -113,7 +126,11 @@ def cmd_verify(gate: str, cr: str) -> int:
 
 
 def cmd_record_env(env: str, version: str, cr: str) -> int:
-    data = {"version": version, "code_sha256": code_hash(), "approver": approver() if env == "production" else "system"}
+    data = {
+        "version": version,
+        "code_sha256": code_hash(),
+        "approver": approver() if env == "production" else "system",
+    }
     write_record(cr, env, data)
     print(f"✔ {env} 배포 기록 저장 (v{version})")
     return 0
@@ -128,7 +145,9 @@ def cmd_status(cr: str) -> int:
             continue
         ok, message = verify(gate, cr) if gate != "production" else (True, "")
         mark = "✔" if ok else "⚠"
-        print(f"  {gate:<11} {mark} {rec.get('approver', 'system')} · {rec['at']}  {message if not ok else ''}")
+        print(
+            f"  {gate:<11} {mark} {rec.get('approver', 'system')} · {rec['at']}  {message if not ok else ''}"
+        )
     return 0
 
 

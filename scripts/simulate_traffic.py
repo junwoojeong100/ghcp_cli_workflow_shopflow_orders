@@ -6,6 +6,7 @@
 클라이언트 구성(실제 서비스와 비슷하게): 웹 60%, 모바일 앱 3.3 15%, 모바일 앱 3.1(구버전) 25%.
 모바일 앱 3.1 은 환불 사유(reason)를 보내지 않는다.
 """
+
 import argparse
 import json
 import random
@@ -17,7 +18,14 @@ CLIENTS = [
     ("ShopFlowMobile/3.3", 0.15, True),
     ("ShopFlowMobile/3.1", 0.25, False),
 ]
-REASONS = ["사이즈가 맞지 않음", "단순 변심", "배송 지연", "상품 불량", "색상이 사진과 다름", "중복 주문"]
+REASONS = [
+    "사이즈가 맞지 않음",
+    "단순 변심",
+    "배송 지연",
+    "상품 불량",
+    "색상이 사진과 다름",
+    "중복 주문",
+]
 
 
 def call(base, method, path, body=None, ua="sim", headers=None):
@@ -47,14 +55,23 @@ def main() -> None:
     for _ in range(args.count):
         ua, _, sends_reason = rnd.choices(CLIENTS, weights=[c[1] for c in CLIENTS])[0]
         customer = rnd.choice(customers)
-        amount = rnd.choice([29_000, 59_000, 89_000, 129_000, 349_000, 790_000, 1_000_000, 1_350_000, 2_100_000])
+        amount = rnd.choice(
+            [29_000, 59_000, 89_000, 129_000, 349_000, 790_000, 1_000_000, 1_350_000, 2_100_000]
+        )
         days_ago = rnd.choice([1, 3, 7, 14, 21, 29, 33, 40, 45, 52, 58, 64])
         from datetime import date, timedelta
 
         ordered_at = (date.today() - timedelta(days=days_ago)).isoformat()
         status, order = call(
-            args.base_url, "POST", "/orders",
-            {"customer_id": customer["id"], "total_amount": amount, "status": "DELIVERED", "ordered_at": ordered_at},
+            args.base_url,
+            "POST",
+            "/orders",
+            {
+                "customer_id": customer["id"],
+                "total_amount": amount,
+                "status": "DELIVERED",
+                "ordered_at": ordered_at,
+            },
             ua=ua,
         )
         if status != 201:
