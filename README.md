@@ -7,6 +7,18 @@
 > 이 저장소의 모든 데이터·고객·회사는 가상입니다. staging / production 은 로컬 포트(8101 / 8100)로 시뮬레이션합니다.
 > `./scripts/demo_reset.sh` 는 저장소를 `baseline` 태그 상태로 되돌립니다. **커밋하지 않은 변경은 모두 삭제**되니 시연용 복사본에서 실행하세요.
 
+## ghcp_cli_workflow 시리즈 — 2개 저장소를 함께 씁니다
+
+| 저장소 | 역할 |
+|---|---|
+| **[ghcp_cli_workflow_shopflow_orders](https://github.com/junwoojeong100/ghcp_cli_workflow_shopflow_orders)** (이 저장소) | **시연 대상** — 데모 앱 · Custom Agent 7종 · Hook · CI/Deploy 예시. 아래 스크립트로 같은 흐름을 직접 재현 |
+| **[ghcp_cli_workflow_demo_kit](https://github.com/junwoojeong100/ghcp_cli_workflow_demo_kit)** | **발표 키트** — 발표 가이드 · 영상/PPT 제작 소스 · 녹화 세션의 실제 산출물(`sample-output/`). 발표 자료(PPTX)·영상(MP4)은 [Releases](https://github.com/junwoojeong100/ghcp_cli_workflow_demo_kit/releases) |
+
+발표 키트의 도구는 이 저장소를 **`shopflow-orders`** 폴더 이름으로 찾습니다. 키트 안에서 함께 쓰려면 이름을 지정해 clone 하세요(아래 1장).
+
+태그: `baseline` = 데모 시작 상태(`demo_reset.sh` 가 되돌아가는 기준), `baseline-recorded` = 영상을 녹화할 때의 시작 상태입니다.
+둘의 차이는 `scripts/` 코드 포맷(ruff, 동작 동일)과 `.gitignore` · README 뿐이며, 발표 키트의 `sample-output/full-change.diff` 는 `baseline-recorded` 기준입니다.
+
 ## 0. 이 데모로 확인한 것 (녹화 세션 실측)
 
 | 항목 | 결과 |
@@ -19,7 +31,7 @@
 | 감사 기록 | 도구 호출 231건, 승인 요청 3건, 차단 0건(본 시연) / 안전장치 시연에서 3건 차단 |
 
 검증 환경: macOS, GitHub Copilot CLI 1.0.98, 녹화 당시 기본 모델(GPT-6.1 Sol). 모델·요금제에 따라 소요 시간과 사용량은 달라집니다.
-녹화 세션의 실제 산출물은 상위 폴더의 `sample-output/` 에 보관되어 있습니다.
+녹화 세션의 실제 산출물은 발표 키트 저장소([ghcp_cli_workflow_demo_kit](https://github.com/junwoojeong100/ghcp_cli_workflow_demo_kit))의 `sample-output/` 에 보관되어 있습니다.
 
 ## 1. 준비물
 
@@ -30,6 +42,7 @@
 | 도구 | Python 3.12, git, sqlite3, jq, curl, lsof (macOS / Linux) |
 
 ```bash
+git clone https://github.com/junwoojeong100/ghcp_cli_workflow_shopflow_orders.git shopflow-orders   # 폴더 이름을 shopflow-orders 로 (발표 키트 도구의 기본 경로)
 cd shopflow-orders
 python3.12 -m venv --copies .venv        # --copies: 가상환경 python 을 복사해 경로 권한 팝업을 줄입니다
 ./.venv/bin/pip install -r requirements.txt
