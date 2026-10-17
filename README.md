@@ -17,7 +17,7 @@
 발표 키트의 도구는 이 저장소를 **`shopflow-orders`** 폴더 이름으로 찾습니다. 키트 안에서 함께 쓰려면 이름을 지정해 clone 하세요(아래 1장).
 
 태그: `baseline` = 데모 시작 상태(`demo_reset.sh` 가 되돌아가는 기준), `baseline-recorded` = 영상을 녹화할 때의 시작 상태입니다.
-둘의 차이는 `scripts/` 코드 포맷(ruff, 동작 동일)과 `.gitignore` · README 뿐이며, 발표 키트의 `sample-output/full-change.diff` 는 `baseline-recorded` 기준입니다.
+둘의 차이는 `scripts/` 코드 포맷(ruff, 동작 동일), `deploy.yml` 의 YAML 따옴표 수정(1줄), `.gitignore` · README 뿐이며, 발표 키트의 `sample-output/full-change.diff` 는 `baseline-recorded` 기준입니다.
 
 ## 0. 이 데모로 확인한 것 (녹화 세션 실측)
 

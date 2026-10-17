@@ -8,7 +8,7 @@ jobs:
     environment: staging          # 자동 배포
     steps:
       - uses: actions/checkout@v4
-      - run: echo "staging 배포 (예: az containerapp update …) 후 스모크 테스트"
+      - run: 'echo "staging 배포 (예: az containerapp update …) 후 스모크 테스트"'
   production:
     needs: staging
     runs-on: ubuntu-latest
