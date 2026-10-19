@@ -1,23 +1,26 @@
 # ShopFlow Orders × GitHub Copilot CLI · Custom Agent 데모 저장소
 
+> - 이 브랜치(`ko`)는 **한국어판 데모**(에이전트·문서·화면이 모두 한국어)입니다. 영어판(기본)은 [`main` 브랜치](https://github.com/junwoojeong100/ghcp_cli_workflow_shopflow_orders/tree/main) 입니다.
+> - 이 브랜치에서 `./scripts/demo_reset.sh` 를 실행하면 **로컬** `main` 브랜치를 `baseline-ko` 태그로 만들어 시작합니다(원격 `main`(영어판)과는 무관합니다).
+
 가상 쇼핑몰 **ShopFlow의 주문·환불 서비스**(Python · FastAPI · SQLite)에 현업의 변경 요청 **CR-2026-014**(VIP 환불 정책 개선)가 들어왔을 때,
 **GitHub Copilot CLI + Custom Agent 7종**이 분석 → 설계 → 구현 → 테스트 → 리뷰 → 배포 → 운영 분석을 처리하고,
 **사람은 3곳(설계 · 코드 · 운영 배포)에서만 승인**하는 워크플로우를 그대로 재현합니다.
 
 > 이 저장소의 모든 데이터·고객·회사는 가상입니다. staging / production 은 로컬 포트(8101 / 8100)로 시뮬레이션합니다.
-> `./scripts/demo_reset.sh` 는 저장소를 `baseline` 태그 상태로 되돌립니다. **커밋하지 않은 변경은 모두 삭제**되니 시연용 복사본에서 실행하세요.
+> `./scripts/demo_reset.sh` 는 저장소를 `baseline-ko` 태그 상태로 되돌립니다. **커밋하지 않은 변경은 모두 삭제**되니 시연용 복사본에서 실행하세요.
 
 ## ghcp_cli_workflow 시리즈 — 2개 저장소를 함께 씁니다
 
 | 저장소 | 역할 |
 |---|---|
 | **[ghcp_cli_workflow_shopflow_orders](https://github.com/junwoojeong100/ghcp_cli_workflow_shopflow_orders)** (이 저장소) | **시연 대상** — 데모 앱 · Custom Agent 7종 · Hook · CI/Deploy 예시. 아래 스크립트로 같은 흐름을 직접 재현 |
-| **[ghcp_cli_workflow_demo_kit](https://github.com/junwoojeong100/ghcp_cli_workflow_demo_kit)** | **발표 키트** — 발표 가이드 · 영상/PPT 제작 소스 · 녹화 세션의 실제 산출물(`sample-output/`). 발표 자료(PPTX)·영상(MP4)은 [Releases](https://github.com/junwoojeong100/ghcp_cli_workflow_demo_kit/releases) |
+| **[ghcp_cli_workflow_demo_kit](https://github.com/junwoojeong100/ghcp_cli_workflow_demo_kit)** | **발표 키트** — 발표 가이드 · 영상/PPT 제작 소스 · 녹화 세션의 실제 산출물(`sample-output/`). **한국어판 자료는 [`ko/` 폴더](https://github.com/junwoojeong100/ghcp_cli_workflow_demo_kit/tree/main/ko)**, 발표 자료(PPTX)·영상(MP4)은 [Releases](https://github.com/junwoojeong100/ghcp_cli_workflow_demo_kit/releases) |
 
 발표 키트의 도구는 이 저장소를 **`shopflow-orders`** 폴더 이름으로 찾습니다. 키트 안에서 함께 쓰려면 이름을 지정해 clone 하세요(아래 1장).
 
-태그: `baseline` = 데모 시작 상태(`demo_reset.sh` 가 되돌아가는 기준), `baseline-recorded` = 영상을 녹화할 때의 시작 상태입니다.
-둘의 차이는 `scripts/` 코드 포맷(ruff, 동작 동일), `deploy.yml` 의 YAML 따옴표 수정(1줄), `.gitignore` · README 뿐이며, 발표 키트의 `sample-output/full-change.diff` 는 `baseline-recorded` 기준입니다.
+태그: `baseline-ko` = 데모 시작 상태(`demo_reset.sh` 가 되돌아가는 기준), `baseline-recorded-ko` = 영상을 녹화할 때의 시작 상태입니다.
+둘의 차이는 `scripts/` 코드 포맷(ruff, 동작 동일), `deploy.yml` 의 YAML 따옴표 수정(1줄), `.gitignore` · README · `demo_reset.sh` 의 태그 이름(`baseline-ko`) · CI 대상 브랜치(`ko` 추가) 뿐이며, 발표 키트의 `ko/sample-output/full-change.diff` 는 `baseline-recorded-ko` 기준입니다.
 
 ## 0. 이 데모로 확인한 것 (녹화 세션 실측)
 
@@ -31,7 +34,7 @@
 | 감사 기록 | 도구 호출 231건, 승인 요청 3건, 차단 0건(본 시연) / 안전장치 시연에서 3건 차단 |
 
 검증 환경: macOS, GitHub Copilot CLI 1.0.98, 녹화 당시 기본 모델(GPT-6.1 Sol). 모델·요금제에 따라 소요 시간과 사용량은 달라집니다.
-녹화 세션의 실제 산출물은 발표 키트 저장소([ghcp_cli_workflow_demo_kit](https://github.com/junwoojeong100/ghcp_cli_workflow_demo_kit))의 `sample-output/` 에 보관되어 있습니다.
+녹화 세션의 실제 산출물은 발표 키트 저장소([ghcp_cli_workflow_demo_kit](https://github.com/junwoojeong100/ghcp_cli_workflow_demo_kit))의 한국어판 폴더 [`ko/`](https://github.com/junwoojeong100/ghcp_cli_workflow_demo_kit/tree/main/ko) 의 `sample-output/` 에 보관되어 있습니다.
 
 ## 1. 준비물
 
@@ -42,7 +45,7 @@
 | 도구 | Python 3.12, git, sqlite3, jq, curl, lsof (macOS / Linux) |
 
 ```bash
-git clone https://github.com/junwoojeong100/ghcp_cli_workflow_shopflow_orders.git shopflow-orders   # 폴더 이름을 shopflow-orders 로 (발표 키트 도구의 기본 경로)
+git clone -b ko https://github.com/junwoojeong100/ghcp_cli_workflow_shopflow_orders.git shopflow-orders   # 한국어판(ko 브랜치) · 폴더 이름을 shopflow-orders 로 (발표 키트 도구의 기본 경로)
 cd shopflow-orders
 python3.12 -m venv --copies .venv        # --copies: 가상환경 python 을 복사해 경로 권한 팝업을 줄입니다
 ./.venv/bin/pip install -r requirements.txt
