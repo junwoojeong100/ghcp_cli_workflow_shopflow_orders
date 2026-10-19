@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# 데모 시작 전에 staging / production 에 현재 릴리스(VERSION)를 미리 띄워 '이미 운영 중인 서비스'를 만든다.
-# 진행자(사람) 전용 초기 구성이다. (에이전트는 훅이 실행을 차단한다)
+# Before the demo, starts the current release (VERSION) in staging / production to create an 'already running service'.
+# Initial setup for the presenter (a human) only. (The hook blocks agents from running it.)
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PY="$ROOT/.venv/bin/python"
@@ -23,5 +23,5 @@ for ENV_NAME in staging production; do
     nohup "$PY" -m uvicorn app.main:app --host 127.0.0.1 --port "$PORT" >> "$DEPLOY/logs/uvicorn.out" 2>&1 &)
   for _ in $(seq 1 30); do curl -fsS "http://127.0.0.1:$PORT/health" >/dev/null 2>&1 && break; sleep 0.5; done
   lsof -ti "tcp:$PORT" -sTCP:LISTEN 2>/dev/null | head -1 > "$DEPLOY/app.pid" || true
-  echo "  ✔ $ENV_NAME v$VERSION 기동 → http://127.0.0.1:$PORT"
+  echo "  ✔ $ENV_NAME v$VERSION started → http://127.0.0.1:$PORT"
 done

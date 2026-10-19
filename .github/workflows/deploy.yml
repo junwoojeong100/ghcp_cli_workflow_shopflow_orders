@@ -5,14 +5,14 @@ on:
 jobs:
   staging:
     runs-on: ubuntu-latest
-    environment: staging          # 자동 배포
+    environment: staging          # automatic deployment
     steps:
       - uses: actions/checkout@v4
-      - run: 'echo "staging 배포 (예: az containerapp update …) 후 스모크 테스트"'
+      - run: 'echo "staging deployment (e.g. az containerapp update …), then smoke test"'
   production:
     needs: staging
     runs-on: ubuntu-latest
-    environment: production       # Environment 보호 규칙: Required reviewers → 담당자 승인 후에만 실행
+    environment: production       # Environment protection rule: Required reviewers → runs only after the owner approves
     steps:
       - uses: actions/checkout@v4
-      - run: echo "production 배포 — 승인된 담당자만 이 단계를 실행할 수 있음"
+      - run: echo "production deployment — only the approved owner can run this step"

@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
-"""Copilot CLI preToolUse 훅 — 역할별 권한과 승인 게이트를 '시스템'이 강제한다.
+"""Copilot CLI preToolUse hook — the system enforces role permissions and approval gates.
 
-사용법:  guard.py --role <global|analyst|architect|dev|qa|reviewer|release|ops> [--no-audit]
-입력(stdin): Copilot CLI 가 넘겨주는 JSON (toolName, toolArgs ...)
-출력(stdout): {"permissionDecision": "deny|ask", "permissionDecisionReason": "..."}  (없으면 기본 동작)
+Usage:  guard.py --role <global|analyst|architect|dev|qa|reviewer|release|ops> [--no-audit]
+Input (stdin): JSON that Copilot CLI passes in (toolName, toolArgs ...)
+Output (stdout): {"permissionDecision": "deny|ask", "permissionDecisionReason": "..."}
+                 (no output = default behavior)
 
-에이전트에게 "하지 마세요"라고 부탁하는 것이 아니라, 도구 호출 직전에 코드가 검사한다.
-이 파일은 보호 경로이므로 에이전트가 수정할 수 없다.
+Instead of asking the agent "please don't", the code checks every tool call right before it runs.
+This file is a protected path, so agents cannot modify it.
 """
 
 import json
@@ -20,7 +21,7 @@ ROOT = Path(os.environ.get("DEMO_REPO_ROOT") or Path(__file__).resolve().parents
 sys.path.insert(0, str(ROOT / "scripts"))
 CR_ID = os.environ.get("DEMO_CR", "CR-2026-014")
 
-# 에이전트가 수정할 수 없는 경로 (정의·훅·표준·원본 요건·승인 기록·감사 로그)
+# Paths agents cannot modify (definitions, hooks, standards, requirements, approvals, audit log)
 PROTECTED = (
     ".github/agents/",
     ".github/hooks/",
@@ -33,7 +34,7 @@ PROTECTED = (
     "approvals/",
     ".copilot-audit/",
 )
-# 설계 승인(①) 전에는 수정할 수 없는 경로
+# Paths that cannot be modified before design approval (①)
 GATED_CODE_PATHS = ("app/", "db/migrations/")
 
 ROLE_WRITE_SCOPE = {
@@ -47,22 +48,23 @@ ROLE_WRITE_SCOPE = {
 }
 READ_ONLY_ROLES = {"analyst", "architect", "reviewer", "ops"}
 ROLE_LABEL = {
-    "analyst": "변경 분석가",
-    "architect": "설계자",
-    "reviewer": "리뷰어",
-    "ops": "운영 분석가",
-    "qa": "테스터",
-    "dev": "개발자",
-    "release": "배포 관리자",
+    "analyst": "Change Analyst",
+    "architect": "Solution Architect",
+    "reviewer": "Reviewer",
+    "ops": "Ops Analyst",
+    "qa": "Tester",
+    "dev": "Developer",
+    "release": "Release Manager",
 }
 
 GATE_REASON = {
-    "design": "① 설계 승인 — 설계서(docs/cr/{cr}/02-design.md)를 검토하셨습니까? 승인하면 구현 단계가 시작되며, 승인 후 설계서가 바뀌면 승인은 자동으로 무효가 됩니다.",
-    "code": "② 코드 승인 — 코드 리뷰·테스트 결과를 확인하셨습니까? 승인한 코드와 해시가 일치하는 코드만 배포할 수 있습니다.",
+    "design": "① Design approval — Have you reviewed the design document (docs/cr/{cr}/02-design.md)? Approving starts the implementation phase, and if the design changes after approval, the approval is automatically invalidated.",
+    "code": "② Code approval — Have you reviewed the code review and test results? Only code whose hash matches the approved code can be deployed.",
 }
 PROD_DEPLOY_REASON = (
-    "③ 운영 배포 승인 — 운영(production) 환경에 배포합니다. 실서비스에 직접 영향을 주므로 "
-    "담당자의 명시적 승인이 필요합니다. (staging 스모크 테스트 통과·코드 승인 기록은 스크립트가 다시 검증합니다)"
+    "③ Production deploy approval — This deploys to the production environment and directly "
+    "affects the live service, so explicit approval from the owner is required. "
+    "(The script re-verifies the staging smoke test and the code approval record.)"
 )
 
 WRITE_TOOLS = {
@@ -79,25 +81,25 @@ SHELL_TOOLS = {"bash", "powershell", "shell"}
 DANGEROUS = [
     (
         re.compile(r"\bgit\s+push\b"),
-        "git push 는 정책상 금지입니다. (원격 반영은 사람이 PR 승인 후 수행)",
+        "git push is prohibited by policy. (Publishing to the remote is done by a human after PR approval.)",
     ),
     (
         re.compile(r"\bgit\s+reset\s+--hard\b|\bgit\s+clean\s+-[a-z]*f"),
-        "작업 내용을 되돌릴 수 없는 git 명령은 금지입니다.",
+        "Git commands that irreversibly discard work are prohibited.",
     ),
     (
         re.compile(r"\brm\s+(-[a-zA-Z]*r[a-zA-Z]*f|-[a-zA-Z]*f[a-zA-Z]*r)\b"),
-        "재귀 강제 삭제(rm -rf)는 금지입니다.",
+        "Recursive forced deletion (rm -rf) is prohibited.",
     ),
-    (re.compile(r"\bsudo\b"), "관리자 권한 실행(sudo)은 금지입니다."),
-    (re.compile(r"--no-verify\b"), "검증 우회(--no-verify)는 금지입니다."),
+    (re.compile(r"\bsudo\b"), "Running commands as administrator (sudo) is prohibited."),
+    (re.compile(r"--no-verify\b"), "Bypassing verification (--no-verify) is prohibited."),
     (
         re.compile(r"bootstrap_env|demo_reset"),
-        "데모 초기화·환경 구성 스크립트는 진행자(사람)만 실행합니다.",
+        "Demo reset and environment setup scripts are run only by the presenter (a human).",
     ),
     (
         re.compile(r"\b(curl|wget)\b[^|;]*\|\s*(ba)?sh\b"),
-        "원격 스크립트를 바로 실행하는 명령은 금지입니다.",
+        "Commands that run a remote script directly are prohibited.",
     ),
 ]
 REDIRECT_NOISE = re.compile(r"\d*>&\d+|\d*>>?\s*/dev/null|&>\s*/dev/null")
@@ -167,7 +169,7 @@ HEREDOC = re.compile(r"<<-?\s*(['\"]?)(\w+)\1[^\n]*\n.*?\n\s*\2\b", re.S)
 
 
 def strip_quoted(cmd: str) -> str:
-    """히어독 본문과 따옴표 안의 문자열(SQL·인자 등)을 지워 실제 명령 구조만 남긴다."""
+    """Removes heredoc bodies and quoted strings (SQL, arguments) so only the command structure remains."""
     return QUOTED.sub("''", HEREDOC.sub("<<HEREDOC", cmd))
 
 
@@ -192,8 +194,8 @@ def design_approved() -> tuple[bool, str]:
         import gate
 
         return gate.verify("design", CR_ID)
-    except Exception as exc:  # 검증기를 못 쓰면 안전하게 거부
-        return False, f"승인 검증 실패: {exc}"
+    except Exception as exc:  # If the verifier is unavailable, deny to stay safe
+        return False, f"Approval verification failed: {exc}"
 
 
 def audit(role: str, tool: str, target: str, decision: str, reason: str = "") -> None:
@@ -216,7 +218,7 @@ def audit(role: str, tool: str, target: str, decision: str, reason: str = "") ->
 
 
 def decide(role: str, tool: str, args: dict, cwd: str) -> tuple[str, str]:
-    """(decision, reason) 반환. decision 은 allow | deny | ask."""
+    """Returns (decision, reason). decision is allow | deny | ask."""
     if tool in WRITE_TOOLS:
         targets = write_targets(tool, args, cwd)
         for target in targets:
@@ -224,7 +226,7 @@ def decide(role: str, tool: str, args: dict, cwd: str) -> tuple[str, str]:
                 if target == prefix.rstrip("/") or target.startswith(prefix):
                     return (
                         "deny",
-                        f"보호된 경로입니다 ({prefix}) — 에이전트 정의·훅·표준·승인 기록은 사람만 변경할 수 있습니다.",
+                        f"Protected path ({prefix}) — agent definitions, hooks, standards and approval records can only be changed by humans.",
                     )
         scope = ROLE_WRITE_SCOPE.get(role)
         if scope:
@@ -232,14 +234,14 @@ def decide(role: str, tool: str, args: dict, cwd: str) -> tuple[str, str]:
                 if not target.startswith(scope):
                     return (
                         "deny",
-                        f"[{ROLE_LABEL.get(role, role)}] 에이전트의 수정 가능 범위는 {', '.join(scope)} 입니다. ({target} 는 범위 밖)",
+                        f"The [{ROLE_LABEL.get(role, role)}] agent may only modify {', '.join(scope)}. ({target} is out of scope)",
                     )
         if any(t.startswith(GATED_CODE_PATHS) for t in targets):
             ok, message = design_approved()
             if not ok:
                 return (
                     "deny",
-                    f"설계 승인(①) 전에는 app/·db/migrations/ 를 수정할 수 없습니다. {message}",
+                    f"Design approval (①) is required before app/ and db/migrations/ can be modified. {message}",
                 )
         return "allow", ""
 
@@ -249,7 +251,7 @@ def decide(role: str, tool: str, args: dict, cwd: str) -> tuple[str, str]:
             if pattern.search(cmd):
                 return "deny", reason
 
-        # 사람 승인 요청은 전역 훅(global)에서만 한 번 띄운다 (역할 훅까지 띄우면 승인 팝업이 중복된다)
+        # Human approval requests come only from the global hook (role hooks would duplicate the pop-up)
         if role == "global":
             gate_match = re.search(r"scripts/gate\.py\s+request\s+(design|code)\b", cmd)
             if gate_match:
@@ -261,13 +263,13 @@ def decide(role: str, tool: str, args: dict, cwd: str) -> tuple[str, str]:
         if writes:
             hit = mentioned_prefixes(cmd, PROTECTED)
             if hit:
-                return "deny", f"보호된 경로({hit[0]})를 수정하는 명령은 금지입니다."
+                return "deny", f"Commands that modify a protected path ({hit[0]}) are prohibited."
             if mentioned_prefixes(cmd, GATED_CODE_PATHS):
                 ok, message = design_approved()
                 if not ok:
                     return (
                         "deny",
-                        f"설계 승인(①) 전에는 app/·db/migrations/ 를 수정할 수 없습니다. {message}",
+                        f"Design approval (①) is required before app/ and db/migrations/ can be modified. {message}",
                     )
 
         if role in READ_ONLY_ROLES:
@@ -276,17 +278,17 @@ def decide(role: str, tool: str, args: dict, cwd: str) -> tuple[str, str]:
             if writes or GIT_WRITE.search(bare) or INSTALLERS.search(bare):
                 return (
                     "deny",
-                    f"[{label}] 에이전트는 읽기 전용입니다. 파일 변경·git 변경·설치 명령은 허용되지 않습니다.",
+                    f"The [{label}] agent is read-only. File changes, git changes and install commands are not allowed.",
                 )
             if INTERPRETERS.search(bare) or NETWORK.search(bare):
                 return (
                     "deny",
-                    f"[{label}] 에이전트는 코드 실행·네트워크 접근이 허용되지 않습니다. (조회는 grep/sqlite3 -readonly 사용)",
+                    f"The [{label}] agent may not run code or access the network. (Use grep or sqlite3 -readonly for lookups.)",
                 )
             if re.search(r"\bsqlite3\b", cmd) and ("-readonly" not in cmd or SQL_WRITE.search(cmd)):
                 return (
                     "deny",
-                    f"[{label}] 에이전트는 DB를 읽기 전용(-readonly, SELECT)으로만 조회할 수 있습니다.",
+                    f"The [{label}] agent may query the DB only in read-only mode (-readonly, SELECT).",
                 )
         return "allow", ""
 
@@ -304,7 +306,9 @@ def main() -> int:
 
     try:
         decision, reason = decide(role, tool, args, cwd)
-    except Exception as exc:  # 훅 오류가 작업 전체를 막지 않도록 기본 흐름으로 위임
+    except (
+        Exception
+    ) as exc:  # Fall back to the default flow so a hook error does not block all work
         print(f"guard error: {exc}", file=sys.stderr)
         return 0
 

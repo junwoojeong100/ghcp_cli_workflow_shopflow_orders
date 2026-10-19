@@ -12,7 +12,7 @@ def require_admin(x_admin_token: str | None = Header(default=None)) -> str:
     if x_admin_token != config.admin_token():
         raise HTTPException(
             status_code=401,
-            detail={"code": "UNAUTHORIZED", "message": "관리자 인증이 필요합니다."},
+            detail={"code": "UNAUTHORIZED", "message": "Admin authentication is required."},
         )
     return "admin"
 

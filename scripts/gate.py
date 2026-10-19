@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
-"""승인(Gate) 기록 관리자.
+"""Approval (gate) record manager.
 
-  gate.py request <design|code> [CR-ID]   사람이 승인하면 approvals/<CR>/<gate>.json 기록
-  gate.py verify  <design|code|staging> [CR-ID]   기록이 유효한지(승인 후 산출물 변경 없음) 검증
-  gate.py record-env <staging|production> <version> [CR-ID]   배포 결과 기록 (deploy.sh 가 호출)
-  gate.py status [CR-ID]   승인 현황 표시
+  gate.py request <design|code> [CR-ID]   Once a human approves, writes approvals/<CR>/<gate>.json
+  gate.py verify  <design|code|staging> [CR-ID]   Checks the record is valid (artifact unchanged since approval)
+  gate.py record-env <staging|production> <version> [CR-ID]   Records a deployment result (called by deploy.sh)
+  gate.py status [CR-ID]   Shows the approval status
 
-'request' 는 훅(scripts/hooks/guard.py)이 항상 사람에게 확인을 요청하도록 강제한다.
-즉 이 기록은 사람이 승인 프롬프트에서 Yes 를 눌러야만 생성된다.
+'request' is always forced by the hook (scripts/hooks/guard.py) to ask a human for confirmation.
+So this record can only be created when a human clicks Yes in the approval prompt.
 """
 
 import getpass
@@ -21,7 +21,11 @@ from pathlib import Path
 ROOT = Path(os.environ.get("DEMO_REPO_ROOT") or Path(__file__).resolve().parent.parent)
 DEFAULT_CR = os.environ.get("DEMO_CR", "CR-2026-014")
 CODE_GLOBS = ["app/**/*.py", "app/static/*", "db/migrations/*.sql"]
-GATE_TITLES = {"design": "① 설계 승인", "code": "② 코드 승인", "production": "③ 운영 배포 승인"}
+GATE_TITLES = {
+    "design": "① Design approval",
+    "code": "② Code approval",
+    "production": "③ Production deploy approval",
+}
 
 
 def approver() -> str:
@@ -72,26 +76,32 @@ def read_record(cr: str, gate: str):
 def verify(gate: str, cr: str) -> tuple[bool, str]:
     rec = read_record(cr, gate)
     if rec is None:
-        return False, f"'{gate}' 승인 기록이 없습니다."
+        return False, f"No '{gate}' approval record found."
     if gate == "design":
         doc = design_doc(cr)
         if not doc.exists():
-            return False, "설계서가 없습니다."
+            return False, "The design document does not exist."
         if rec.get("sha256") != sha256_file(doc):
-            return False, "승인 이후 설계서가 변경되어 승인이 무효입니다. 다시 승인받으세요."
-        return True, f"설계 승인 유효 (승인자 {rec['approver']}, {rec['at']})"
+            return (
+                False,
+                "The design document changed after approval, so the approval is no longer valid. Please get it approved again.",
+            )
+        return True, f"Design approval valid (approver {rec['approver']}, {rec['at']})"
     if gate in ("code", "staging"):
         if rec.get("code_sha256") != code_hash():
-            return False, f"승인/검증 이후 코드가 변경되어 '{gate}' 기록이 무효입니다."
-        return True, f"'{gate}' 기록 유효 ({rec.get('approver', 'system')}, {rec['at']})"
-    return True, "기록 존재"
+            return (
+                False,
+                f"The code changed after approval/verification, so the '{gate}' record is no longer valid.",
+            )
+        return True, f"'{gate}' record valid ({rec.get('approver', 'system')}, {rec['at']})"
+    return True, "Record exists"
 
 
 def cmd_request(gate: str, cr: str) -> int:
     if gate == "design":
         doc = design_doc(cr)
         if not doc.exists():
-            print(f"✗ 설계서가 없습니다: {doc.relative_to(ROOT)}")
+            print(f"✗ The design document does not exist: {doc.relative_to(ROOT)}")
             return 1
         data = {"artifact": str(doc.relative_to(ROOT)), "sha256": sha256_file(doc)}
     elif gate == "code":
@@ -101,20 +111,20 @@ def cmd_request(gate: str, cr: str) -> int:
             if not (ROOT / "docs" / "cr" / cr / n).exists()
         ]
         if missing:
-            print(f"✗ 코드 승인 전에 필요한 산출물이 없습니다: {', '.join(missing)}")
+            print(f"✗ Deliverables required before code approval are missing: {', '.join(missing)}")
             return 1
         data = {"artifact": "app/ + db/migrations/", "code_sha256": code_hash()}
     else:
         print(
-            "✗ request 는 design | code 만 지원합니다. (운영 배포 승인은 deploy.sh production 실행 시점에 받습니다)"
+            "✗ 'request' supports only design | code. (Production deploy approval is requested when deploy.sh production runs.)"
         )
         return 1
     data["approver"] = approver()
     path = write_record(cr, gate, data)
-    print(f"✔ {GATE_TITLES[gate]} 기록 완료 — 승인자: {data['approver']}")
-    print(f"  기록 파일: {path.relative_to(ROOT)}")
+    print(f"✔ {GATE_TITLES[gate]} recorded — approver: {data['approver']}")
+    print(f"  Record file: {path.relative_to(ROOT)}")
     print(
-        f"  무결성 해시: {(data.get('sha256') or data.get('code_sha256'))[:16]}…  (승인 후 변경되면 무효)"
+        f"  Integrity hash: {(data.get('sha256') or data.get('code_sha256'))[:16]}…  (invalid if changed after approval)"
     )
     return 0
 
@@ -132,16 +142,16 @@ def cmd_record_env(env: str, version: str, cr: str) -> int:
         "approver": approver() if env == "production" else "system",
     }
     write_record(cr, env, data)
-    print(f"✔ {env} 배포 기록 저장 (v{version})")
+    print(f"✔ {env} deployment record saved (v{version})")
     return 0
 
 
 def cmd_status(cr: str) -> int:
-    print(f"승인 현황 — {cr}")
+    print(f"Approval status — {cr}")
     for gate in ("design", "code", "staging", "production"):
         rec = read_record(cr, gate)
         if rec is None:
-            print(f"  {gate:<11} ✗ 기록 없음")
+            print(f"  {gate:<11} ✗ no record")
             continue
         ok, message = verify(gate, cr) if gate != "production" else (True, "")
         mark = "✔" if ok else "⚠"

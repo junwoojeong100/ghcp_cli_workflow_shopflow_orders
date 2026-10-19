@@ -1,4 +1,4 @@
-"""DB 마이그레이션 실행기: db/migrations/*.sql 을 번호순으로 한 번씩만 적용한다."""
+"""DB migration runner: applies db/migrations/*.sql in numeric order, once each."""
 
 import sqlite3
 import sys

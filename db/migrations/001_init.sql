@@ -1,16 +1,16 @@
--- 001: 초기 스키마 (고객, 주문, 환불, 감사 로그, 알림 대기열)
+-- 001: Initial schema (customers, orders, refunds, audit log, notification queue)
 CREATE TABLE customers (
   id INTEGER PRIMARY KEY,
   name TEXT NOT NULL,
   email TEXT NOT NULL,
-  tier TEXT,                       -- STANDARD | VIP (레거시 이관 데이터는 표기가 섞여 있을 수 있음)
+  tier TEXT,                       -- STANDARD | VIP (migrated legacy data may use mixed spellings)
   created_at TEXT NOT NULL
 );
 
 CREATE TABLE orders (
   id INTEGER PRIMARY KEY,
   customer_id INTEGER NOT NULL REFERENCES customers(id),
-  total_amount INTEGER NOT NULL,   -- 원(KRW)
+  total_amount INTEGER NOT NULL,   -- KRW
   status TEXT NOT NULL,            -- PAID | SHIPPED | DELIVERED | CANCELLED
   ordered_at TEXT NOT NULL         -- YYYY-MM-DD (UTC)
 );

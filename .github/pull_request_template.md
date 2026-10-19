@@ -1,11 +1,11 @@
-## 변경 요약 (현업용)
-<!-- 무엇이 바뀌나요? 고객/현업에게 어떤 영향이 있나요? -->
+## Change summary (for business stakeholders)
+<!-- What changes? How does it affect customers and the business team? -->
 
-## 연결된 변경 요청
+## Linked change request
 - CR: 
 
-## 점검 결과
-- [ ] 테스트 통과 (`pytest`) · 린트 통과 (`ruff`)
-- [ ] 리뷰 리포트(`docs/cr/<CR>/05-review-report.md`) 확인
-- [ ] 코드 승인(②) 기록 확인
-- [ ] 롤백 방법 확인
+## Checks
+- [ ] Tests pass (`pytest`) · Lint passes (`ruff`)
+- [ ] Review report (`docs/cr/<CR>/05-review-report.md`) checked
+- [ ] Code approval (②) record checked
+- [ ] Rollback method checked

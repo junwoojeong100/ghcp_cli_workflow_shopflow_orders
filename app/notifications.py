@@ -1,19 +1,21 @@
-"""고객 알림(이메일) 발송 대기열. 실제 발송은 별도 워커가 담당한다."""
+"""Customer notification (email) queue. A separate worker does the actual sending."""
 
 from . import clock
 
-REFUND_APPROVED_SUBJECT = "[ShopFlow] 환불이 승인되었습니다"
+REFUND_APPROVED_SUBJECT = "[ShopFlow] Your refund has been approved"
 REFUND_APPROVED_BODY = (
-    "{name} 고객님, 안녕하세요.\n"
-    "주문 #{order_id}의 환불 {amount:,}원이 승인되었습니다. 영업일 기준 3일 이내에 환급됩니다.\n\n"
-    "※ 환불은 구매 후 30일 이내에 신청하실 수 있습니다.\n"
+    "Hello {name},\n"
+    "Your refund of ₩{amount:,} for order #{order_id} has been approved. "
+    "You will receive the money within 3 business days.\n\n"
+    "Note: Refunds can be requested within 30 days of purchase.\n"
 )
 
-REFUND_REJECTED_SUBJECT = "[ShopFlow] 환불 요청이 반려되었습니다"
+REFUND_REJECTED_SUBJECT = "[ShopFlow] Your refund request has been rejected"
 REFUND_REJECTED_BODY = (
-    "{name} 고객님, 안녕하세요.\n"
-    "주문 #{order_id}의 환불 요청이 반려되었습니다. 자세한 내용은 고객센터로 문의해 주세요.\n\n"
-    "※ 환불은 구매 후 30일 이내에 신청하실 수 있습니다.\n"
+    "Hello {name},\n"
+    "Your refund request for order #{order_id} has been rejected. "
+    "Please contact customer support for details.\n\n"
+    "Note: Refunds can be requested within 30 days of purchase.\n"
 )
 
 

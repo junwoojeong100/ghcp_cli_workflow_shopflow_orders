@@ -1,17 +1,17 @@
-# ShopFlow 주문·환불 서비스 — Copilot 작업 지침
+# ShopFlow Orders & Refunds Service — Copilot Working Instructions
 
-## 프로젝트
-- Python 3.12 + FastAPI + SQLite. 구조: `app/`(routers, services, static), `db/migrations/`, `tests/`, `docs/`, `scripts/`
-- 테스트: `.venv/bin/pytest -q` · 린트/포맷: `.venv/bin/ruff check . && .venv/bin/ruff format .`
-- 사내 표준: `docs/standards/` (코딩 · 보안 점검표 · DB 마이그레이션 · 릴리스 정책)을 항상 따른다.
+## Project
+- Python 3.12 + FastAPI + SQLite. Structure: `app/` (routers, services, static), `db/migrations/`, `tests/`, `docs/`, `scripts/`
+- Tests: `.venv/bin/pytest -q` · Lint/format: `.venv/bin/ruff check . && .venv/bin/ruff format .`
+- Company standards: always follow `docs/standards/` (coding · security checklist · DB migration · release policy).
 
-## 작업 방식 (모든 에이전트 공통)
-1. 응답과 문서는 **한국어**로 쓴다. 현업이 읽는 요약을 먼저, 기술 상세는 뒤에 둔다. (코드 식별자는 영어)
-2. 변경 요청(CR)의 단계별 산출물은 `docs/cr/<CR-ID>/` 에 번호 순서로 남긴다.
-   `01-impact-analysis` → `02-design` → `03-implementation-notes` → `04-test-report` → `05-review-report` → `06-release-plan` → `07-ops-report` (모두 `.md`)
-3. **사람 승인 3곳**: ① 설계 승인 ② 코드 승인 ③ 운영 배포 승인. 승인은 `scripts/gate.py request …` 또는 `scripts/deploy.sh production` 실행 시 사람에게 요청되며, 승인 없이 다음 단계로 넘어가지 않는다. `approvals/` 와 승인된 산출물은 직접 수정하지 않는다.
-4. 사실만 쓴다. 확인하지 못한 것은 추측하지 말고 "확인 필요"로 표시하고 근거(파일·줄)를 함께 적는다.
-5. 금지: 시크릿 출력, 운영 데이터 직접 수정, `git push`, 보호 경로(`.github/agents`, `.github/hooks`, `scripts/`, `docs/standards`, `docs/requirements`, `approvals/`) 수정.
-6. 훅(Guardrail)이 도구 호출을 거부하면 우회하지 말고, 거부 사유를 사용자에게 한 줄로 설명한 뒤 다음 행동을 제안한다.
-7. **범위 통제**: 변경 요청서(CR)에 없는 요구는 분석·설계·구현 범위에 넣지 않는다. 필요해 보이면 '후속 과제'로 한 줄만 적고, 항상 **요구사항을 충족하는 가장 단순한 방법**을 택한다. 외부 확인이 필요한 사항은 배포를 막는 조건이 아니라 '배포 전 체크리스트' 항목으로 적는다.
-8. **분량 규칙**: 단계별 문서는 **A4 3쪽(약 90줄) 이내, 표 중심**으로 쓴다. 영향 범위 표는 핵심 10행 이내(같은 영역은 합친다), 결정 필요 사항은 중요도 순 **최대 5개**, 근거는 `파일:줄` 한 곳만. 마지막 채팅 응답은 **6줄 이내**로 요약한다.
+## How we work (all agents)
+1. Write responses and documents in **English**. Put a business-readable summary first and technical detail after. (Code identifiers stay in English.)
+2. Save the stage outputs of a change request (CR) in `docs/cr/<CR-ID>/`, in numbered order.
+   `01-impact-analysis` → `02-design` → `03-implementation-notes` → `04-test-report` → `05-review-report` → `06-release-plan` → `07-ops-report` (all `.md`)
+3. **Three human approvals**: ① Design approval ② Code approval ③ Production deploy approval. Approval is requested from a human when `scripts/gate.py request …` or `scripts/deploy.sh production` runs. Do not move to the next stage without approval. Do not edit `approvals/` or approved deliverables directly.
+4. Write facts only. For anything you could not verify, do not guess: mark it "Needs confirmation" and give the evidence (file and line) with it.
+5. Forbidden: printing secrets, modifying production data directly, `git push`, and modifying protected paths (`.github/agents`, `.github/hooks`, `scripts/`, `docs/standards`, `docs/requirements`, `approvals/`).
+6. If a hook (guardrail) denies a tool call, do not work around it. Explain the reason for the denial to the user in one line, then suggest the next action.
+7. **Scope control**: Do not put requirements that are not in the change request (CR) into the analysis, design or implementation scope. If something seems necessary, write it as a one-line 'follow-up item' only, and always choose **the simplest way that meets the requirements**. Items that need outside confirmation are not conditions that block deployment; write them as 'pre-deployment checklist' items.
+8. **Length rules**: Keep each stage document to **3 A4 pages or fewer (about 90 lines), mostly tables**. The impact table has **10 key rows or fewer** (merge rows for the same area), decisions needed are **at most 5**, in order of importance, and evidence is **one `file:line` only**. Summarize the final chat reply in **6 lines or fewer**.

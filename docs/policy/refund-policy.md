@@ -1,11 +1,11 @@
-# 환불 정책 (고객 안내용)
+# Refund Policy (customer notice)
 
-ShopFlow에서 구매하신 상품은 아래 기준으로 환불해 드립니다.
+Products you buy at ShopFlow are refunded under the terms below.
 
-1. **환불 기간**: 구매일로부터 **30일 이내**에 신청하실 수 있습니다.
-2. **환불 금액**: 주문 금액을 한도로, 부분 환불도 가능합니다.
-3. **배송 중 주문**: 물류 확인 후 담당자가 승인하며, 승인 결과는 이메일로 안내해 드립니다.
-4. **환급 시점**: 승인 후 영업일 기준 3일 이내에 결제수단으로 환급됩니다.
-5. **취소된 주문**은 환불 대상이 아닙니다.
+1. **Refund period**: You can request a refund within **30 days** of the purchase date.
+2. **Refund amount**: Up to the order amount; partial refunds are also possible.
+3. **Orders in delivery**: After a logistics check, a staff member approves the refund, and we let you know the result by e-mail.
+4. **Payout timing**: After approval, the money is returned to your payment method within 3 business days.
+5. **Cancelled orders** are not eligible for a refund.
 
-문의: 고객센터 1588-0000
+Contact: Customer Center 1588-0000

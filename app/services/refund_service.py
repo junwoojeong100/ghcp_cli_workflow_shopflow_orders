@@ -1,4 +1,4 @@
-"""환불 접수와 승인/반려 처리."""
+"""Refund intake and approve/reject handling."""
 
 from .. import audit, clock, notifications
 from . import order_service
@@ -13,7 +13,7 @@ def get_refund(db, refund_id: int) -> dict:
         (refund_id,),
     ).fetchone()
     if row is None:
-        raise order_service.NotFound(f"환불 {refund_id} 을(를) 찾을 수 없습니다.")
+        raise order_service.NotFound(f"Refund {refund_id} was not found.")
     return dict(row)
 
 
@@ -30,7 +30,7 @@ def request_refund(db, order_id: int, amount: int, actor: str = "customer") -> d
     order = order_service.get_order(db, order_id)
     customer = order_service.get_customer(db, order["customer_id"])
     if order["status"] == "CANCELLED":
-        raise RefundDenied("ORDER_CANCELLED", "취소된 주문은 환불할 수 없습니다.")
+        raise RefundDenied("ORDER_CANCELLED", "A cancelled order cannot be refunded.")
     check_refund_window(order["ordered_at"], clock.today())
     already = db.execute(
         "SELECT COALESCE(SUM(amount), 0) FROM refunds WHERE order_id = ? AND status IN (?, ?)",
@@ -38,7 +38,7 @@ def request_refund(db, order_id: int, amount: int, actor: str = "customer") -> d
     ).fetchone()[0]
     check_amount(order["total_amount"], already, amount)
 
-    # 배송 중인 주문은 물류 확인이 필요하므로 관리자가 수동으로 승인한다.
+    # Orders in transit (SHIPPED) need a logistics check, so an admin approves them manually.
     status = "REQUESTED" if order["status"] == "SHIPPED" else "APPROVED"
     now = clock.now().isoformat()
     cur = db.execute(
@@ -61,7 +61,9 @@ def request_refund(db, order_id: int, amount: int, actor: str = "customer") -> d
 def decide_refund(db, refund_id: int, approve: bool, actor: str = "admin") -> dict:
     refund = get_refund(db, refund_id)
     if refund["status"] != "REQUESTED":
-        raise RefundDenied("NOT_PENDING", "승인 대기 중인 환불만 처리할 수 있습니다.")
+        raise RefundDenied(
+            "NOT_PENDING", "Only refunds that are pending approval can be processed."
+        )
     new_status = "APPROVED" if approve else "REJECTED"
     db.execute(
         "UPDATE refunds SET status = ?, decided_at = ? WHERE id = ?",

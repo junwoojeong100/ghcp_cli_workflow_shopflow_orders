@@ -1,4 +1,4 @@
-"""환경 설정. 모든 값은 환경변수로 덮어쓸 수 있다."""
+"""Environment settings. Every value can be overridden with an environment variable."""
 
 import os
 from pathlib import Path

@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# 배포 스크립트 (데모: 로컬 환경 .deploy/<env> 에 릴리스 폴더 + current 심볼릭 링크 방식)
+# Deploy script (demo: local environment .deploy/<env> using release folders + a 'current' symlink)
 #
-#   scripts/deploy.sh staging                 # 테스트·린트 → 마이그레이션 → 교체 → 헬스체크 → 스모크 테스트
-#   scripts/deploy.sh production              # staging 검증 + 사람 승인 후에만 (훅이 승인을 강제)
-#   scripts/deploy.sh <env> --rollback        # 직전 릴리스로 되돌리기
+#   scripts/deploy.sh staging                 # tests·lint → migration → swap → health check → smoke test
+#   scripts/deploy.sh production              # only after staging verification + human approval (the hook enforces approval)
+#   scripts/deploy.sh <env> --rollback        # go back to the previous release
 #
-# 실제 환경에서는 같은 단계를 GitHub Actions(Environment 승인) + Azure(Container Apps 등)로 수행한다.
+# In a real environment, the same steps run on GitHub Actions (Environment approval) + Azure (Container Apps, etc.).
 set -euo pipefail
 
 ENV_NAME="${1:-}"; shift || true
@@ -14,14 +14,14 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     --rollback) ROLLBACK=1 ;;
     --cr) CR="$2"; shift ;;
-    *) echo "알 수 없는 옵션: $1"; exit 2 ;;
+    *) echo "Unknown option: $1"; exit 2 ;;
   esac
   shift
 done
 case "$ENV_NAME" in
   staging) PORT=8101 ;;
   production) PORT=8100 ;;
-  *) echo "사용법: scripts/deploy.sh <staging|production> [--rollback] [--cr CR-ID]"; exit 2 ;;
+  *) echo "Usage: scripts/deploy.sh <staging|production> [--rollback] [--cr CR-ID]"; exit 2 ;;
 esac
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -59,7 +59,7 @@ wait_healthy() {
   local expected="$1"
   for _ in $(seq 1 30); do
     local body; body="$(curl -fsS "$BASE_URL/health" 2>/dev/null || true)"
-    if [[ "$body" == *"\"version\":\"$expected\""* ]]; then listener_pids | head -1 > "$DEPLOY/app.pid"; ok "헬스체크 통과: $body"; return 0; fi
+    if [[ "$body" == *"\"version\":\"$expected\""* ]]; then listener_pids | head -1 > "$DEPLOY/app.pid"; ok "Health check passed: $body"; return 0; fi
     sleep 0.5
   done
   return 1
@@ -68,41 +68,41 @@ wait_healthy() {
 smoke() { "$PY" "$ROOT/scripts/smoke_test.py" "$BASE_URL"; }
 
 if [[ $ROLLBACK -eq 1 ]]; then
-  step "롤백: $ENV_NAME"
-  [[ -L "$DEPLOY/previous" ]] || { fail "되돌릴 직전 릴리스가 없습니다."; exit 1; }
+  step "Rollback: $ENV_NAME"
+  [[ -L "$DEPLOY/previous" ]] || { fail "There is no previous release to roll back to."; exit 1; }
   target="$(readlink "$DEPLOY/previous")"; current="$(readlink "$DEPLOY/current" || true)"
   stop_service; ln -sfn "$target" "$DEPLOY/current"; [[ -n "$current" ]] && ln -sfn "$current" "$DEPLOY/previous"
   start_service "$target"
   prev_version="$(tr -d '[:space:]' < "$target/VERSION")"
-  wait_healthy "$prev_version" && ok "롤백 완료 → v$prev_version" || { fail "롤백 후 헬스체크 실패"; exit 1; }
+  wait_healthy "$prev_version" && ok "Rollback complete → v$prev_version" || { fail "Health check failed after rollback"; exit 1; }
   exit 0
 fi
 
-step "배포 전 점검 ($ENV_NAME · v$VERSION)"
-"$PY" "$ROOT/scripts/gate.py" verify code "$CR" || { fail "코드 승인(②) 기록이 없거나 무효입니다. 배포를 중단합니다."; exit 1; }
+step "Pre-deployment checks ($ENV_NAME · v$VERSION)"
+"$PY" "$ROOT/scripts/gate.py" verify code "$CR" || { fail "The code approval (②) record is missing or invalid. Stopping the deployment."; exit 1; }
 if [[ "$ENV_NAME" == "production" ]]; then
-  "$PY" "$ROOT/scripts/gate.py" verify staging "$CR" || { fail "staging 검증 기록이 없습니다. 먼저 staging 에 배포하세요."; exit 1; }
+  "$PY" "$ROOT/scripts/gate.py" verify staging "$CR" || { fail "No staging verification record found. Deploy to staging first."; exit 1; }
 fi
-(cd "$ROOT" && "$ROOT/.venv/bin/ruff" check . >/dev/null && ok "린트 통과") || { fail "린트 실패"; exit 1; }
-(cd "$ROOT" && "$ROOT/.venv/bin/pytest" -q 2>&1 | tail -1) || { fail "테스트 실패"; exit 1; }
-ok "테스트 통과"
+(cd "$ROOT" && "$ROOT/.venv/bin/ruff" check . >/dev/null && ok "Lint passed") || { fail "Lint failed"; exit 1; }
+(cd "$ROOT" && "$ROOT/.venv/bin/pytest" -q 2>&1 | tail -1) || { fail "Tests failed"; exit 1; }
+ok "Tests passed"
 
-step "릴리스 패키징"
+step "Packaging the release"
 RELEASE="$DEPLOY/releases/$(date +%Y%m%d-%H%M%S)-v$VERSION"
 mkdir -p "$RELEASE/scripts"
 cp -R "$ROOT/app" "$ROOT/db" "$ROOT/VERSION" "$ROOT/requirements.txt" "$RELEASE/"
 cp "$ROOT/scripts/migrate.py" "$ROOT/scripts/seed.py" "$RELEASE/scripts/"
 find "$RELEASE" -name '__pycache__' -type d -prune -exec rm -rf {} +
-ok "릴리스 폴더: ${RELEASE#$ROOT/}"
+ok "Release folder: ${RELEASE#$ROOT/}"
 
-step "DB 백업 + 마이그레이션"
+step "DB backup + migration"
 DB="$DEPLOY/data/orders.db"
 FIRST=0; [[ -f "$DB" ]] || FIRST=1
-[[ $FIRST -eq 0 ]] && cp "$DB" "$DEPLOY/backups/orders-$(date +%Y%m%d-%H%M%S).db" && ok "백업 완료 (롤백 시 데이터 복구용)"
+[[ $FIRST -eq 0 ]] && cp "$DB" "$DEPLOY/backups/orders-$(date +%Y%m%d-%H%M%S).db" && ok "Backup complete (for data recovery on rollback)"
 "$PY" "$RELEASE/scripts/migrate.py" "$DB"
-[[ $FIRST -eq 1 ]] && "$PY" "$RELEASE/scripts/seed.py" "$DB" && ok "시연용 초기 데이터 적재"
+[[ $FIRST -eq 1 ]] && "$PY" "$RELEASE/scripts/seed.py" "$DB" && ok "Demo seed data loaded"
 
-step "서비스 교체"
+step "Swapping the service"
 OLD="$(readlink "$DEPLOY/current" || true)"
 stop_service
 [[ -n "$OLD" ]] && ln -sfn "$OLD" "$DEPLOY/previous"
@@ -111,9 +111,9 @@ start_service "$RELEASE"
 
 if wait_healthy "$VERSION" && smoke; then
   "$PY" "$ROOT/scripts/gate.py" record-env "$ENV_NAME" "$VERSION" "$CR" >/dev/null
-  printf "\n\033[1;32m✔ 배포 성공 — %s · v%s · %s\033[0m\n" "$ENV_NAME" "$VERSION" "$BASE_URL"
+  printf "\n\033[1;32m✔ Deployment succeeded — %s · v%s · %s\033[0m\n" "$ENV_NAME" "$VERSION" "$BASE_URL"
 else
-  fail "배포 검증 실패 → 자동 롤백"
+  fail "Deployment verification failed → automatic rollback"
   stop_service
   if [[ -n "$OLD" ]]; then ln -sfn "$OLD" "$DEPLOY/current"; start_service "$OLD"; fi
   exit 1

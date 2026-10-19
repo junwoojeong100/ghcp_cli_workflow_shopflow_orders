@@ -1,4 +1,4 @@
-"""ShopFlow 주문·환불 서비스 진입점."""
+"""Entry point of the ShopFlow orders and refunds service."""
 
 import json
 import sys

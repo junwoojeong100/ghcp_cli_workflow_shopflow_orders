@@ -45,7 +45,7 @@ def query(db_path):
 
 @pytest.fixture()
 def make_customer(db_path):
-    def _make(name="테스트고객", tier="STANDARD", email="test@example.com"):
+    def _make(name="Test Customer", tier="STANDARD", email="test@example.com"):
         conn = sqlite3.connect(db_path)
         cur = conn.execute(
             "INSERT INTO customers (name, email, tier, created_at) VALUES (?, ?, ?, ?)",

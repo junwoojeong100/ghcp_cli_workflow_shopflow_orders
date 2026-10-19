@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""시연용 트래픽 생성기: 배포 직후 '하루치' 환불 요청을 흉내 낸다.
+"""Demo traffic generator: imitates a "day's worth" of refund requests right after deployment.
 
   scripts/simulate_traffic.py http://127.0.0.1:8100 --count 120
 
-클라이언트 구성(실제 서비스와 비슷하게): 웹 60%, 모바일 앱 3.3 15%, 모바일 앱 3.1(구버전) 25%.
-모바일 앱 3.1 은 환불 사유(reason)를 보내지 않는다.
+Client mix (like the real service): web 60%, mobile app 3.3 15%, mobile app 3.1 (legacy) 25%.
+Mobile app 3.1 does not send the refund reason (reason).
 """
 
 import argparse
@@ -19,12 +19,12 @@ CLIENTS = [
     ("ShopFlowMobile/3.1", 0.25, False),
 ]
 REASONS = [
-    "사이즈가 맞지 않음",
-    "단순 변심",
-    "배송 지연",
-    "상품 불량",
-    "색상이 사진과 다름",
-    "중복 주문",
+    "Wrong size",
+    "Change of mind",
+    "Delivery delay",
+    "Defective product",
+    "Color differs from photo",
+    "Duplicate order",
 ]
 
 
@@ -82,7 +82,7 @@ def main() -> None:
         status, result = call(args.base_url, "POST", f"/orders/{order['id']}/refund", body, ua=ua)
         key = f"{status}:{result.get('status') or result.get('detail', {}).get('code')}"
         summary[key] = summary.get(key, 0) + 1
-    print(f"시뮬레이션 완료 ({args.count}건): ")
+    print(f"Simulation complete ({args.count} requests):")
     for key, value in sorted(summary.items(), key=lambda kv: -kv[1]):
         print(f"  {key:<28} {value}")
 

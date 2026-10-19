@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="ko">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ShopFlow 주문·환불</title>
+  <title>ShopFlow Orders & Refunds</title>
   <style>
     :root { --ink:#1f2328; --muted:#656d76; --line:#d0d7de; --brand:#6e40c9; --bg:#f6f8fa; --ok:#1a7f37; --warn:#9a6700; --bad:#cf222e; }
     * { box-sizing: border-box; }
@@ -36,35 +36,35 @@
   </style>
 </head>
 <body>
-  <header><h1>ShopFlow 주문·환불</h1><span class="env" id="env">-</span></header>
+  <header><h1>ShopFlow Orders & Refunds</h1><span class="env" id="env">-</span></header>
   <nav>
-    <button class="active" data-tab="customer">고객 화면</button>
-    <button data-tab="admin">관리자 콘솔</button>
+    <button class="active" data-tab="customer">Customer view</button>
+    <button data-tab="admin">Admin console</button>
   </nav>
   <main>
     <section id="tab-customer">
       <div class="card">
         <div class="row">
-          <label for="customer">고객</label>
+          <label for="customer">Customer</label>
           <select id="customer"></select>
           <span id="tier"></span>
         </div>
-        <p class="policy" id="policy">환불은 구매 후 30일 이내에 신청하실 수 있습니다.</p>
+        <p class="policy" id="policy">Refunds can be requested within 30 days of purchase.</p>
       </div>
       <div class="card">
-        <h2>주문 내역</h2>
+        <h2>Orders</h2>
         <table>
-          <thead><tr><th>주문번호</th><th>주문일</th><th>금액</th><th>상태</th><th></th></tr></thead>
+          <thead><tr><th>Order #</th><th>Order date</th><th>Amount</th><th>Status</th><th></th></tr></thead>
           <tbody id="orders"></tbody>
         </table>
       </div>
       <div class="card hidden" id="refund-card">
-        <h2>환불 요청 · 주문 #<span id="refund-order"></span></h2>
+        <h2>Refund request · Order #<span id="refund-order"></span></h2>
         <div class="row">
-          <label for="amount">환불 금액(원)</label>
+          <label for="amount">Refund amount (KRW)</label>
           <input id="amount" type="number" min="1">
-          <button class="act" id="submit-refund">환불 요청</button>
-          <button class="act ghost" id="cancel-refund">닫기</button>
+          <button class="act" id="submit-refund">Request refund</button>
+          <button class="act ghost" id="cancel-refund">Close</button>
         </div>
         <div id="result"></div>
       </div>
@@ -73,15 +73,15 @@
     <section id="tab-admin" class="hidden">
       <div class="card">
         <div class="row">
-          <label for="token">관리자 토큰</label>
+          <label for="token">Admin token</label>
           <input id="token" value="demo-admin-token">
-          <button class="act" id="load-admin">승인 대기 목록 불러오기</button>
+          <button class="act" id="load-admin">Load pending approvals</button>
         </div>
       </div>
       <div class="card">
-        <h2>승인 대기 환불</h2>
+        <h2>Refunds pending approval</h2>
         <table>
-          <thead><tr><th>환불번호</th><th>주문</th><th>금액</th><th>접수일시</th><th></th></tr></thead>
+          <thead><tr><th>Refund #</th><th>Order</th><th>Amount</th><th>Requested at</th><th></th></tr></thead>
           <tbody id="pending"></tbody>
         </table>
         <div id="admin-result"></div>
@@ -91,16 +91,16 @@
 
   <script>
     const $ = (id) => document.getElementById(id);
-    const won = (n) => n.toLocaleString("ko-KR") + "원";
+    const won = (n) => "₩" + n.toLocaleString("en-US");
     let customers = [], selectedOrder = null;
 
     async function api(path, opts = {}) {
       const res = await fetch(path, { headers: { "Content-Type": "application/json", ...(opts.headers || {}) }, ...opts });
       const body = await res.json().catch(() => ({}));
-      if (!res.ok) throw body.detail || { message: "요청에 실패했습니다." };
+      if (!res.ok) throw body.detail || { message: "The request failed." };
       return body;
     }
-    const tierBadge = (t) => (t || "").trim().toUpperCase() === "VIP" ? '<span class="badge vip">VIP</span>' : '<span class="badge">일반</span>';
+    const tierBadge = (t) => (t || "").trim().toUpperCase() === "VIP" ? '<span class="badge vip">VIP</span>' : '<span class="badge">Standard</span>';
 
     async function loadCustomers() {
       customers = await api("/customers");
@@ -113,7 +113,7 @@
       const orders = await api(`/customers/${c.id}/orders`);
       $("orders").innerHTML = orders.map((o) => `<tr><td>#${o.id}</td><td>${o.ordered_at}</td><td>${won(o.total_amount)}</td>
         <td><span class="badge">${o.status}</span></td>
-        <td><button class="act ghost" data-order="${o.id}" data-amount="${o.total_amount}">환불</button></td></tr>`).join("");
+        <td><button class="act ghost" data-order="${o.id}" data-amount="${o.total_amount}">Refund</button></td></tr>`).join("");
       $("refund-card").classList.add("hidden");
     }
     $("customer").addEventListener("change", showCustomer);
@@ -129,7 +129,7 @@
     $("submit-refund").addEventListener("click", async () => {
       try {
         const r = await api(`/orders/${selectedOrder}/refund`, { method: "POST", body: JSON.stringify({ amount: Number($("amount").value) }) });
-        $("result").innerHTML = `<div class="msg ok">환불 #${r.id} 접수 완료 · 상태 <span class="badge ${r.status}">${r.status}</span></div>`;
+        $("result").innerHTML = `<div class="msg ok">Refund #${r.id} submitted · Status <span class="badge ${r.status}">${r.status}</span></div>`;
       } catch (err) {
         $("result").innerHTML = `<div class="msg err">${err.message}</div>`;
       }
@@ -139,7 +139,7 @@
       try {
         const list = await api("/admin/refunds?status=REQUESTED", { headers: { "X-Admin-Token": $("token").value } });
         $("pending").innerHTML = list.map((r) => `<tr><td>#${r.id}</td><td>#${r.order_id}</td><td>${won(r.amount)}</td><td>${r.requested_at.slice(0, 16).replace("T", " ")}</td>
-          <td><button class="act" data-act="approve" data-id="${r.id}">승인</button> <button class="act ghost" data-act="reject" data-id="${r.id}">반려</button></td></tr>`).join("") || '<tr><td colspan="5">승인 대기 건이 없습니다.</td></tr>';
+          <td><button class="act" data-act="approve" data-id="${r.id}">Approve</button> <button class="act ghost" data-act="reject" data-id="${r.id}">Reject</button></td></tr>`).join("") || '<tr><td colspan="5">No refunds are pending approval.</td></tr>';
       } catch (err) { $("admin-result").innerHTML = `<div class="msg err">${err.message}</div>`; }
     }
     $("load-admin").addEventListener("click", loadPending);
@@ -147,7 +147,7 @@
       const b = e.target.closest("button[data-act]"); if (!b) return;
       try {
         await api(`/admin/refunds/${b.dataset.id}/${b.dataset.act}`, { method: "POST", headers: { "X-Admin-Token": $("token").value } });
-        $("admin-result").innerHTML = `<div class="msg ok">환불 #${b.dataset.id} 처리 완료</div>`; loadPending();
+        $("admin-result").innerHTML = `<div class="msg ok">Refund #${b.dataset.id} processed</div>`; loadPending();
       } catch (err) { $("admin-result").innerHTML = `<div class="msg err">${err.message}</div>`; }
     });
 

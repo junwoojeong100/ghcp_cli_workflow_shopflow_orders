@@ -1,9 +1,9 @@
-# 코딩 표준 (Python / FastAPI)
+# Coding Standards (Python / FastAPI)
 
-1. 라우터(`app/routers`)는 입출력 변환만 하고, 업무 규칙은 `app/services` 에 둔다.
-2. 정책 숫자·임계값은 코드에 흩뿌리지 않고 **한 곳의 상수/설정**으로 관리한다.
-3. 모든 SQL은 **파라미터 바인딩**(`?`)을 사용한다. 문자열 연결로 SQL을 만들지 않는다.
-4. 시간은 `app.clock` 을 통해서만 얻는다. (테스트에서 고정 가능해야 함)
-5. 공개 함수에는 한 줄 이상의 한국어 docstring 또는 주석으로 의도를 적는다.
-6. 신규/변경 업무 규칙마다 **경계값 테스트**(예: 30일/31일, 정확히 임계값)를 둔다.
-7. `ruff check .` 와 `ruff format .` 를 통과해야 한다.
+1. Routers (`app/routers`) only convert input and output; business rules live in `app/services`.
+2. Do not scatter policy numbers and thresholds through the code; manage them as **a constant/setting in one place**.
+3. Use **parameter binding** (`?`) for all SQL. Never build SQL by string concatenation.
+4. Get the time only through `app.clock`. (It must be possible to fix the time in tests.)
+5. Public functions state their intent in an English docstring or comment of at least one line.
+6. Every new or changed business rule has **boundary-value tests** (for example day 30 / day 31, exactly at the threshold).
+7. `ruff check .` and `ruff format .` must pass.

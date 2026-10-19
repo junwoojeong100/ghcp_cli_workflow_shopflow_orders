@@ -95,7 +95,7 @@ def test_approved_refund_email_mentions_refund_window(client, make_customer, mak
     order = make_order(make_customer(), amount=30_000)
     refund(client, order, 30_000)
     body = query("SELECT body FROM notifications")[0]["body"]
-    assert "30일" in body
+    assert "30 days" in body
 
 
 def test_unknown_order_returns_404(client):

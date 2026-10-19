@@ -1,4 +1,4 @@
-"""고객·주문 조회/생성."""
+"""Customer and order lookup/creation."""
 
 from .. import clock
 from ..schemas import OrderCreate
@@ -18,7 +18,7 @@ def get_customer(db, customer_id: int) -> dict:
         "SELECT id, name, email, tier FROM customers WHERE id = ?", (customer_id,)
     ).fetchone()
     if row is None:
-        raise NotFound(f"고객 {customer_id} 을(를) 찾을 수 없습니다.")
+        raise NotFound(f"Customer {customer_id} was not found.")
     return dict(row)
 
 
@@ -37,7 +37,7 @@ def get_order(db, order_id: int) -> dict:
         (order_id,),
     ).fetchone()
     if row is None:
-        raise NotFound(f"주문 {order_id} 을(를) 찾을 수 없습니다.")
+        raise NotFound(f"Order {order_id} was not found.")
     return dict(row)
 
 

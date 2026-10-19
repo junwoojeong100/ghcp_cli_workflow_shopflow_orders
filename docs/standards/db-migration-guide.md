@@ -1,7 +1,7 @@
-# DB 마이그레이션 가이드 (무중단·하위호환)
+# DB Migration Guide (zero downtime · backward compatible)
 
-1. 파일명은 `NNN_설명.sql` (3자리 번호, 오름차순). 한 번 적용된 파일은 **수정하지 않는다.**
-2. **확장 → 전환 → 축소** 3단계를 지킨다. 한 번에 컬럼 삭제·이름 변경·타입 변경 금지.
-3. 기존 테이블에 컬럼을 추가할 때는 **NULL 허용 또는 DEFAULT 값**을 둔다. (`NOT NULL`만 단독 추가 금지)
-4. 기존 데이터를 변경하는 경우 되돌릴 방법(롤백 SQL 또는 백업 절차)을 설계서에 적는다.
-5. 구버전 애플리케이션(직전 릴리스)이 새 스키마에서도 동작해야 한다.
+1. File names are `NNN_description.sql` (3-digit number, ascending). A file that has already been applied is **never modified.**
+2. Follow the three steps **expand → switch → contract**. Never drop, rename or change the type of a column in a single step.
+3. When you add a column to an existing table, make it **nullable or give it a DEFAULT value**. (Never add a column that is only `NOT NULL`.)
+4. If you change existing data, write the way to undo it (rollback SQL or a backup procedure) in the design document.
+5. The legacy application version (the previous release) must still work on the new schema.

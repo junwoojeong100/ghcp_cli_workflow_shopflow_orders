@@ -1,4 +1,4 @@
-"""감사 로그: 누가 언제 무엇을 했는지 audit_log 테이블에 남긴다."""
+"""Audit log: records who did what and when in the audit_log table."""
 
 import json
 

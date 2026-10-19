@@ -1,4 +1,4 @@
-"""API 요청/응답 스키마."""
+"""API request/response schemas."""
 
 from pydantic import BaseModel, Field
 
@@ -7,11 +7,11 @@ class OrderCreate(BaseModel):
     customer_id: int
     total_amount: int = Field(gt=0)
     status: str = "PAID"
-    ordered_at: str | None = None  # YYYY-MM-DD, 생략하면 오늘
+    ordered_at: str | None = None  # YYYY-MM-DD; defaults to today if omitted
 
 
 class RefundCreate(BaseModel):
-    amount: int = Field(gt=0, description="환불 요청 금액(원)")
+    amount: int = Field(gt=0, description="Requested refund amount (KRW)")
 
 
 class CustomerOut(BaseModel):

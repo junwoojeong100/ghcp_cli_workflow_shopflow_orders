@@ -1,7 +1,7 @@
 def test_customer_list_hides_email(client, make_customer):
-    make_customer(name="한서윤", tier="VIP", email="secret@example.com")
+    make_customer(name="Seoyun Han", tier="VIP", email="secret@example.com")
     body = client.get("/customers").json()
-    assert body[0]["name"] == "한서윤"
+    assert body[0]["name"] == "Seoyun Han"
     assert "email" not in body[0]
 
 

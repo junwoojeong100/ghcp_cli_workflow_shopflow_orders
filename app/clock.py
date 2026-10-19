@@ -1,4 +1,4 @@
-"""시간 공급자. 테스트에서 monkeypatch 하기 쉽도록 한 곳에 모은다."""
+"""Time provider. Kept in one place so tests can monkeypatch it easily."""
 
 from datetime import date, datetime, timezone
 

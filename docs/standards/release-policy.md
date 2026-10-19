@@ -1,12 +1,12 @@
-# 릴리스 · 배포 정책
+# Release and Deployment Policy
 
-| 환경 | 배포 조건 | 배포 주체 |
+| Environment | Deployment condition | Who deploys |
 |---|---|---|
-| staging | 테스트·린트 통과 + **코드 승인(②) 기록** | 배포 에이전트가 직접 수행 가능 |
-| production | staging 스모크 테스트 통과 + **운영 배포 승인(③)** | **담당자(사람)의 명시적 승인 후에만** |
+| staging | Tests and lint pass + **code approval (②) recorded** | The deployment agent can do it directly |
+| production | Staging smoke test passes + **production deploy approval (③)** | **Only after explicit approval by the owner (a human)** |
 
-1. 모든 변경은 단계별 산출물을 `docs/cr/<CR-ID>/` 에 남긴다 (영향 분석 → 설계 → 구현 노트 → 테스트 → 리뷰 → 릴리스 계획 → 운영 리포트).
-2. 사람 승인 3곳: ① **설계 승인**, ② **코드 승인**, ③ **운영 배포 승인**. 승인 기록은 `approvals/<CR-ID>/` 에 남는다.
-3. 승인 후 산출물이 바뀌면 승인은 **무효**가 되며 다시 받아야 한다.
-4. 모든 배포는 롤백 방법이 준비되어 있어야 하고, 배포 직후 스모크 테스트를 수행한다.
-5. 에이전트는 승인 기록 폴더, 에이전트 정의, 훅(guardrail), 표준 문서를 수정할 수 없다.
+1. For every change, leave the stage outputs in `docs/cr/<CR-ID>/` (impact analysis → design → implementation notes → tests → review → release plan → operations report).
+2. Three human approvals: ① **Design approval**, ② **Code approval**, ③ **Production deploy approval**. Approval records are kept in `approvals/<CR-ID>/`.
+3. If an output changes after approval, the approval becomes **invalid** and must be obtained again.
+4. Every deployment must have a rollback method prepared, and a smoke test is run right after deployment.
+5. Agents cannot modify the approval records folder, the agent definitions, the hooks (guardrails) or the standards documents.

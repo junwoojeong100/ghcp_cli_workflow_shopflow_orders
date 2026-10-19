@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""배포 직후 스모크 테스트: 핵심 경로가 살아 있는지 확인한다."""
+"""Post-deployment smoke test: checks that the key paths are alive."""
 
 import json
 import sys
@@ -28,7 +28,7 @@ def check(name: str, condition: bool, detail: str = "") -> bool:
 
 
 def main() -> int:
-    print("스모크 테스트")
+    print("Smoke test")
     results = []
     status, body = call("GET", "/health")
     results.append(
@@ -37,25 +37,27 @@ def main() -> int:
         )
     )
     status, body = call("GET", "/customers")
-    results.append(check("GET /customers", status == 200 and len(body) > 0, f"{len(body)}명"))
+    results.append(
+        check("GET /customers", status == 200 and len(body) > 0, f"{len(body)} customers")
+    )
     status, body = call("GET", "/customers/11/orders")
     results.append(check("GET /customers/11/orders", status == 200 and len(body) > 0))
     status, _ = call(
         "GET", "/admin/refunds?status=REQUESTED", headers={"X-Admin-Token": "demo-admin-token"}
     )
-    results.append(check("GET /admin/refunds (관리자 인증)", status == 200))
+    results.append(check("GET /admin/refunds (admin auth)", status == 200))
     status, order = call("POST", "/orders", {"customer_id": 11, "total_amount": 1000})
-    results.append(check("POST /orders (점검용 주문)", status == 201))
+    results.append(check("POST /orders (smoke-test order)", status == 201))
     if status == 201:
         status, refund = call(
-            "POST", f"/orders/{order['id']}/refund", {"amount": 1000, "reason": "스모크 테스트"}
+            "POST", f"/orders/{order['id']}/refund", {"amount": 1000, "reason": "Smoke test"}
         )
         results.append(
-            check("POST /orders/{id}/refund", status == 201, f"상태 {refund.get('status')}")
+            check("POST /orders/{id}/refund", status == 201, f"status {refund.get('status')}")
         )
     ok = all(results)
     print(
-        ("✔ 스모크 테스트 통과" if ok else "✘ 스모크 테스트 실패")
+        ("✔ Smoke test passed" if ok else "✘ Smoke test failed")
         + f" ({sum(results)}/{len(results)})"
     )
     return 0 if ok else 1

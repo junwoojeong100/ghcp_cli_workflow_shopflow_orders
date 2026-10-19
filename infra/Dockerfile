@@ -1,4 +1,4 @@
-# 운영용 컨테이너 이미지 (데모 저장소의 로컬 배포는 scripts/deploy.sh 가 대신한다)
+# Production container image (in this demo repo, scripts/deploy.sh does the local deployment instead)
 FROM python:3.12-slim
 WORKDIR /srv/app
 COPY requirements.txt ./
