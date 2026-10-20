@@ -1,14 +1,15 @@
 # ShopFlow Orders × GitHub Copilot CLI · Custom Agent 데모 저장소
 
-> - 이 브랜치(`ko`)는 **한국어판 데모**(에이전트·문서·화면이 모두 한국어)입니다. 영어판(기본)은 [`main` 브랜치](https://github.com/junwoojeong100/ghcp_cli_workflow_shopflow_orders/tree/main) 입니다.
-> - 이 브랜치에서 `./scripts/demo_reset.sh` 를 실행하면 **로컬** `main` 브랜치를 `baseline-ko` 태그로 만들어 시작합니다(원격 `main`(영어판)과는 무관합니다).
+> - 이 문서는 **한국어판 데모**(에이전트·문서·화면이 모두 한국어)의 안내입니다. 영어판(기본) 안내는 [README.md](https://github.com/junwoojeong100/ghcp_cli_workflow_shopflow_orders/blob/main/README.md) 입니다.
+> - 한국어판도 이 저장소에 함께 들어 있습니다(브랜치는 `main` 하나뿐). GitHub 에서는 [`ko/`](https://github.com/junwoojeong100/ghcp_cli_workflow_shopflow_orders/tree/main/ko) 폴더로 보이고, `DEMO_LANG=ko ./scripts/demo_reset.sh` 를 실행하면 한국어판이 저장소 루트에 펼쳐져 시연할 수 있습니다. 영어판으로 돌아가려면 `DEMO_LANG=en ./scripts/demo_reset.sh` 입니다.
+> - 작업 트리에는 선택한 한쪽 판만 펼쳐집니다. 그래서 시연 중에는 `ko/` 폴더가 보이지 않고, 에이전트의 검색에도 다른 판이 섞이지 않습니다.
 
 가상 쇼핑몰 **ShopFlow의 주문·환불 서비스**(Python · FastAPI · SQLite)에 현업의 변경 요청 **CR-2026-014**(VIP 환불 정책 개선)가 들어왔을 때,
 **GitHub Copilot CLI + Custom Agent 7종**이 분석 → 설계 → 구현 → 테스트 → 리뷰 → 배포 → 운영 분석을 처리하고,
 **사람은 3곳(설계 · 코드 · 운영 배포)에서만 승인**하는 워크플로우를 그대로 재현합니다.
 
 > 이 저장소의 모든 데이터·고객·회사는 가상입니다. staging / production 은 로컬 포트(8101 / 8100)로 시뮬레이션합니다.
-> `./scripts/demo_reset.sh` 는 저장소를 `baseline-ko` 태그 상태로 되돌립니다. **커밋하지 않은 변경은 모두 삭제**되니 시연용 복사본에서 실행하세요.
+> `./scripts/demo_reset.sh` 는 저장소를 한국어판 시작 상태(`baseline-ko` 태그)로 되돌립니다. **커밋하지 않은 변경은 모두 삭제**되니 시연용 복사본에서 실행하세요. (영어판이 펼쳐진 상태에서 처음 실행할 때는 `DEMO_LANG=ko` 를 붙입니다.)
 
 ## ghcp_cli_workflow 시리즈 — 2개 저장소를 함께 씁니다
 
@@ -22,7 +23,7 @@
 **다운로드 없이 브라우저에서 바로 보기:** 한국어판 [전체 영상](https://junwoojeong100.github.io/ghcp_cli_workflow_demo_kit/ko/video/GHCP_CLI_Workflow_Demo_KO.mp4) · [발표 자료](https://view.officeapps.live.com/op/view.aspx?src=https%3A%2F%2Fjunwoojeong100.github.io%2Fghcp_cli_workflow_demo_kit%2Fko%2FGHCP_CLI_Workflow_Demo_KO.pptx) — 영어판 [전체 영상](https://junwoojeong100.github.io/ghcp_cli_workflow_demo_kit/video/GHCP_CLI_Workflow_Demo_EN.mp4) · [발표 자료](https://view.officeapps.live.com/op/view.aspx?src=https%3A%2F%2Fjunwoojeong100.github.io%2Fghcp_cli_workflow_demo_kit%2FGHCP_CLI_Workflow_Demo_EN.pptx). 단계별 클립과 챕터 링크는 [발표 키트 README](https://github.com/junwoojeong100/ghcp_cli_workflow_demo_kit/blob/main/README.ko.md#브라우저에서-바로-보기--다운로드-없이)에 있습니다.
 
 태그: `baseline-ko` = 데모 시작 상태(`demo_reset.sh` 가 되돌아가는 기준), `baseline-recorded-ko` = 영상을 녹화할 때의 시작 상태입니다.
-둘의 차이는 `scripts/` 코드 포맷(ruff, 동작 동일), `deploy.yml` 의 YAML 따옴표 수정(1줄), `.gitignore` · README · `demo_reset.sh` 의 태그 이름(`baseline-ko`) · CI 대상 브랜치(`ko` 추가) 뿐이며, 발표 키트의 `ko/sample-output/full-change.diff` 는 `baseline-recorded-ko` 기준입니다.
+둘의 차이는 `scripts/` 코드 포맷(ruff, 동작 동일), `deploy.yml` 의 YAML 따옴표 수정(1줄), `.gitignore` · README · `demo_reset.sh`(영어판·한국어판 전환 기능) 뿐이며, 발표 키트의 `ko/sample-output/full-change.diff` 는 `baseline-recorded-ko` 기준입니다.
 
 ## 0. 이 데모로 확인한 것 (녹화 세션 실측)
 
@@ -47,11 +48,11 @@
 | 도구 | Python 3.12, git, sqlite3, jq, curl, lsof (macOS / Linux) |
 
 ```bash
-git clone -b ko https://github.com/junwoojeong100/ghcp_cli_workflow_shopflow_orders.git shopflow-orders   # 한국어판(ko 브랜치) · 폴더 이름을 shopflow-orders 로 (발표 키트 도구의 기본 경로)
+git clone https://github.com/junwoojeong100/ghcp_cli_workflow_shopflow_orders.git shopflow-orders   # 폴더 이름을 shopflow-orders 로 (발표 키트 도구의 기본 경로)
 cd shopflow-orders
 python3.12 -m venv --copies .venv        # --copies: 가상환경 python 을 복사해 경로 권한 팝업을 줄입니다
 ./.venv/bin/pip install -r requirements.txt
-./scripts/demo_reset.sh                  # 시작 상태로 초기화 + staging(8101)/production(8100)에 v1.0.0 가동
+DEMO_LANG=ko ./scripts/demo_reset.sh     # 한국어판을 저장소 루트에 펼치고 시작 상태로 초기화 + staging(8101)/production(8100)에 v1.0.0 가동
 ```
 
 ## 2. 실행 방법
