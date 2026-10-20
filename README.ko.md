@@ -20,6 +20,8 @@
 
 발표 키트의 도구는 이 저장소를 **`shopflow-orders`** 폴더 이름으로 찾습니다. 키트 안에서 함께 쓰려면 이름을 지정해 clone 하세요(아래 1장).
 
+**다운로드 없이 브라우저에서 바로 보기:** 한국어판 [전체 영상](https://junwoojeong100.github.io/ghcp_cli_workflow_demo_kit/ko/video/GHCP_CLI_Workflow_Demo_KO.mp4) · [발표 자료](https://view.officeapps.live.com/op/view.aspx?src=https%3A%2F%2Fjunwoojeong100.github.io%2Fghcp_cli_workflow_demo_kit%2Fko%2FGHCP_CLI_Workflow_Demo_KO.pptx) — 영어판 [전체 영상](https://junwoojeong100.github.io/ghcp_cli_workflow_demo_kit/video/GHCP_CLI_Workflow_Demo_EN.mp4) · [발표 자료](https://view.officeapps.live.com/op/view.aspx?src=https%3A%2F%2Fjunwoojeong100.github.io%2Fghcp_cli_workflow_demo_kit%2FGHCP_CLI_Workflow_Demo_EN.pptx). 단계별 클립과 챕터 링크는 [발표 키트 README](https://github.com/junwoojeong100/ghcp_cli_workflow_demo_kit/blob/main/README.ko.md#브라우저에서-바로-보기--다운로드-없이)에 있습니다.
+
 태그: `baseline-ko` = 데모 시작 상태(`demo_reset.sh` 가 되돌아가는 기준), `baseline-recorded-ko` = 영상을 녹화할 때의 시작 상태입니다.
 둘의 차이는 `scripts/` 코드 포맷(ruff, 동작 동일), `deploy.yml` 의 YAML 따옴표 수정(1줄), `.gitignore` · README 뿐이며, 발표 키트의 `sample-output/full-change.diff` 는 `baseline-recorded-ko` 기준입니다.
 

@@ -18,6 +18,8 @@ This is the **English (default) edition**, on branch `main`. The **Korean editio
 `git clone -b ko https://github.com/junwoojeong100/ghcp_cli_workflow_shopflow_orders.git shopflow-orders` — it is described in [README.ko.md](README.ko.md) (in Korean).
 The presentation kit has English slides and videos by default; the Korean edition is under its [`ko/` folder](https://github.com/junwoojeong100/ghcp_cli_workflow_demo_kit/tree/main/ko).
 
+**Watch in your browser (no download):** English [full video](https://junwoojeong100.github.io/ghcp_cli_workflow_demo_kit/video/GHCP_CLI_Workflow_Demo_EN.mp4) · [slides](https://view.officeapps.live.com/op/view.aspx?src=https%3A%2F%2Fjunwoojeong100.github.io%2Fghcp_cli_workflow_demo_kit%2FGHCP_CLI_Workflow_Demo_EN.pptx) — Korean [full video](https://junwoojeong100.github.io/ghcp_cli_workflow_demo_kit/ko/video/GHCP_CLI_Workflow_Demo_KO.mp4) · [slides](https://view.officeapps.live.com/op/view.aspx?src=https%3A%2F%2Fjunwoojeong100.github.io%2Fghcp_cli_workflow_demo_kit%2Fko%2FGHCP_CLI_Workflow_Demo_KO.pptx). Per-step clips and chapter links are in the [presentation kit README](https://github.com/junwoojeong100/ghcp_cli_workflow_demo_kit#watch-online--no-download).
+
 The kit's tools look for this repository in a folder named **`shopflow-orders`**. To use them together with the kit, clone with an explicit folder name (see chapter 1 below).
 
 Tags: `baseline` = the demo start state (the state `demo_reset.sh` returns to), `baseline-recorded` = the start state when the video was recorded. The Korean edition uses `baseline-ko` / `baseline-recorded-ko`.
