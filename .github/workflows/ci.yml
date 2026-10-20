@@ -13,3 +13,16 @@ jobs:
       - run: pip install -r requirements.txt
       - run: ruff check . && ruff format --check .
       - run: pytest --cov=app --cov-report=term-missing
+  # The Korean edition (ko/) is a full copy of the app, so it is tested on its own
+  test-ko:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ko
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install -r requirements.txt
+      - run: ruff check . && ruff format --check .
+      - run: pytest --cov=app --cov-report=term-missing
