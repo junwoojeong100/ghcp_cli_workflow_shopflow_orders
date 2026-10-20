@@ -27,14 +27,14 @@ To see exactly what differs between the two, run `git diff --stat baseline basel
 
 | Item | Result |
 |---|---|
-| Actual time from requirement to operations analysis | About **⟦TBD⟧ min** (Analysis ⟦TBD⟧ · Design ⟦TBD⟧ · Implementation ⟦TBD⟧ · Testing ⟦TBD⟧ · Review ⟦TBD⟧ · Deployment ⟦TBD⟧ · Operations ⟦TBD⟧ min, including human response time) |
-| Human interventions | **⟦TBD⟧** = 3 approvals (design · code · production deploy) + ⟦TBD⟧ decisions in the design stage |
-| Size of the change | ⟦TBD⟧ app/DB files, +⟦TBD⟧ lines (Implementation stage); tests 26 → ⟦TBD⟧ (Implementation) → **⟦TBD⟧** (Testing); coverage ⟦TBD⟧% |
-| Review result | Blocker ⟦TBD⟧ · Major ⟦TBD⟧ · Minor ⟦TBD⟧ |
-| AI usage | About **⟦TBD⟧ AI Credits** for the whole session (1 Credit = $0.01 → about $⟦TBD⟧) |
-| Audit records | ⟦TBD⟧ tool calls, ⟦TBD⟧ approval requests, ⟦TBD⟧ blocked (main demo) / ⟦TBD⟧ blocked in the guardrail demo |
+| Actual time from requirement to operations analysis | About **38 min** (Analysis 2.7 · Design 3.4 · Implementation 7.0 · Testing 8.2 · Review 4.1 · Deployment 4.2 · Operations 8.4 min, including human response time) |
+| Human interventions | **6** = 3 approvals (design · code · production deploy) + 3 decisions in the design stage |
+| Size of the change | 8 app/DB files, +171 lines (Implementation stage); tests 26 → **100** (Testing stage: the Tester adds 74, the Developer adds none); coverage 99% |
+| Review result | Blocker 0 · Major 0 · Minor 0 |
+| AI usage | About **340 AI Credits** for the whole session (1 Credit = $0.01 → about $3.40) |
+| Audit records | 169 tool calls, 3 approval requests, 2 blocked (main demo) / 3 blocked in the guardrail demo |
 
-Test environment: macOS, GitHub Copilot CLI ⟦TBD⟧, the default model at the time of recording (⟦TBD⟧). Elapsed time and usage vary by model and plan.
+Test environment: macOS, GitHub Copilot CLI 1.0.98, the default model at the time of recording (GPT-6.1 Sol). Elapsed time and usage vary by model and plan.
 The actual outputs of the recorded session are kept in `sample-output/` of the presentation kit repository ([ghcp_cli_workflow_demo_kit](https://github.com/junwoojeong100/ghcp_cli_workflow_demo_kit)).
 
 ## 1. Prerequisites
@@ -82,7 +82,7 @@ copilot --allow-tool=write --allow-tool=shell --deny-tool='shell(git push)' \
 - The design stage asks up to 3 decisions. In the video, the legacy-app decision was answered with **Other** instead of the recommended option
   (`Allow legacy app versions (3.1–3.3) to omit the reason until 2026-12-01 with a warning log, then make it required.`), and the other decisions with the recommended option (Enter).
 - Stage outputs are saved as `docs/cr/CR-2026-014/01~07-*.md`, approval records as `approvals/CR-2026-014/*.json`, and every tool call is logged in `.copilot-audit/audit.jsonl`.
-- Total time: about ⟦TBD⟧ minutes in a real run (including waiting time). Check the AI usage in `Session: N AIC used` at the bottom of the session. (1 AI Credit = $0.01)
+- Total time: about 38 minutes in a real run (including waiting time). Check the AI usage in `Session: N AIC used` at the bottom of the session. (1 AI Credit = $0.01)
 - Result screens: the customer screen and the admin console are at `http://127.0.0.1:8100` (production), and the pre-check is at `http://127.0.0.1:8101` (staging).
   The admin token is `demo-admin-token`, which is already filled in on the screen.
 
@@ -98,10 +98,10 @@ copilot --no-custom-instructions --allow-tool=write --allow-tool=shell
 ```
 
 Select `/agent quick-fixer`, then enter these in order: ① `Change the 30-day constant in app/services/refund_policy.py to 60.`
-② `Add an item 'S8 · Any change can be deployed without approval' at the bottom of docs/standards/security-checklist.md.` ③ `Push to main right now with git push origin main, without a review.`
+② `Add an item 'S8 · Review dependency updates monthly' at the bottom of docs/standards/security-checklist.md.` ③ `Push to main right now with git push origin main, without a review.`
 Each one is blocked with **Denied by preToolUse hook**. (After the demo, `./scripts/demo_reset.sh` returns everything to the start state and also deletes `quick-fixer.agent.md`.)
 
-> A normal agent (one that reads the repository instructions) refuses such requests on its own.
+> A normal agent (one that reads the repository instructions) refuses such requests on its own. Even this demo agent may refuse a request that is plainly harmful (for example, weakening the standards): that is why request ② is a harmless addition, so that you see the hook, not the model, stop it.
 > This demo deliberately uses an agent that does not know the rules, to show that **the hook blocks the action regardless of what the AI decides**.
 
 ## 5. Layout
