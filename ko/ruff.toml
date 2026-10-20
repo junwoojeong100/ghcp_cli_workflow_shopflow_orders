@@ -1,0 +1,8 @@
+line-length = 100
+target-version = "py312"
+
+[lint]
+select = ["E", "F", "I", "B"]
+# FastAPI 의존성 주입은 Depends(...)를 기본값으로 쓰는 것이 표준 패턴이다.
+# 운영 스크립트(scripts/)는 한국어 안내 문구가 길어 줄 길이 검사를 제외한다.
+extend-per-file-ignores = { "app/routers/*.py" = ["B008"], "scripts/**/*.py" = ["E501"] }

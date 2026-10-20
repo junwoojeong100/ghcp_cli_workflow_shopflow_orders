@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "hooks": {
+    "preToolUse": [
+      {
+        "type": "command",
+        "bash": "python3 scripts/hooks/guard.py --role global",
+        "cwd": ".",
+        "timeoutSec": 10
+      }
+    ]
+  }
+}
