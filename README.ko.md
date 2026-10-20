@@ -1,15 +1,14 @@
 # ShopFlow Orders × GitHub Copilot CLI · Custom Agent 데모 저장소
 
-> - 이 문서는 **한국어판 데모**(에이전트·문서·화면이 모두 한국어)의 안내입니다. 영어판(기본) 안내는 [README.md](https://github.com/junwoojeong100/ghcp_cli_workflow_shopflow_orders/blob/main/README.md) 입니다.
-> - 한국어판도 이 저장소에 함께 들어 있습니다(브랜치는 `main` 하나뿐). GitHub 에서는 [`ko/`](https://github.com/junwoojeong100/ghcp_cli_workflow_shopflow_orders/tree/main/ko) 폴더로 보이고, `DEMO_LANG=ko ./scripts/demo_reset.sh` 를 실행하면 한국어판이 저장소 루트에 펼쳐져 시연할 수 있습니다. 영어판으로 돌아가려면 `DEMO_LANG=en ./scripts/demo_reset.sh` 입니다.
-> - 작업 트리에는 선택한 한쪽 판만 펼쳐집니다. 그래서 시연 중에는 `ko/` 폴더가 보이지 않고, 에이전트의 검색에도 다른 판이 섞이지 않습니다.
+> - 이 문서는 [README.md](README.md)(영어, 기본)의 **한국어 안내**입니다. 코드(에이전트·문서·화면)는 영어 하나이고 브랜치는 `main` 하나뿐이며, 안내 문서만 영어와 한국어로 제공합니다.
+> - [발표 키트](https://github.com/junwoojeong100/ghcp_cli_workflow_demo_kit/tree/main/ko)의 한국어 영상·발표 자료는 한국어로 동작하는 변형판(태그 `baseline-recorded-ko`)을 녹화한 것이라, 화면 언어와 일부 수치가 이 문서(영어판 녹화본 기준)와 다릅니다.
 
 가상 쇼핑몰 **ShopFlow의 주문·환불 서비스**(Python · FastAPI · SQLite)에 현업의 변경 요청 **CR-2026-014**(VIP 환불 정책 개선)가 들어왔을 때,
 **GitHub Copilot CLI + Custom Agent 7종**이 분석 → 설계 → 구현 → 테스트 → 리뷰 → 배포 → 운영 분석을 처리하고,
 **사람은 3곳(설계 · 코드 · 운영 배포)에서만 승인**하는 워크플로우를 그대로 재현합니다.
 
 > 이 저장소의 모든 데이터·고객·회사는 가상입니다. staging / production 은 로컬 포트(8101 / 8100)로 시뮬레이션합니다.
-> `./scripts/demo_reset.sh` 는 저장소를 한국어판 시작 상태(`baseline-ko` 태그)로 되돌립니다. **커밋하지 않은 변경은 모두 삭제**되니 시연용 복사본에서 실행하세요. (영어판이 펼쳐진 상태에서 처음 실행할 때는 `DEMO_LANG=ko` 를 붙입니다.)
+> `./scripts/demo_reset.sh` 는 저장소를 `baseline` 태그 상태로 되돌립니다. **커밋하지 않은 변경은 모두 삭제**되니 시연용 복사본에서 실행하세요.
 
 ## ghcp_cli_workflow 시리즈 — 2개 저장소를 함께 씁니다
 
@@ -22,22 +21,23 @@
 
 **다운로드 없이 브라우저에서 바로 보기:** 한국어판 [전체 영상](https://junwoojeong100.github.io/ghcp_cli_workflow_demo_kit/ko/video/GHCP_CLI_Workflow_Demo_KO.mp4) · [발표 자료](https://view.officeapps.live.com/op/view.aspx?src=https%3A%2F%2Fjunwoojeong100.github.io%2Fghcp_cli_workflow_demo_kit%2Fko%2FGHCP_CLI_Workflow_Demo_KO.pptx) — 영어판 [전체 영상](https://junwoojeong100.github.io/ghcp_cli_workflow_demo_kit/video/GHCP_CLI_Workflow_Demo_EN.mp4) · [발표 자료](https://view.officeapps.live.com/op/view.aspx?src=https%3A%2F%2Fjunwoojeong100.github.io%2Fghcp_cli_workflow_demo_kit%2FGHCP_CLI_Workflow_Demo_EN.pptx). 단계별 클립과 챕터 링크는 [발표 키트 README](https://github.com/junwoojeong100/ghcp_cli_workflow_demo_kit/blob/main/README.ko.md#브라우저에서-바로-보기--다운로드-없이)에 있습니다.
 
-태그: `baseline-ko` = 데모 시작 상태(`demo_reset.sh` 가 되돌아가는 기준), `baseline-recorded-ko` = 영상을 녹화할 때의 시작 상태입니다.
-둘의 차이는 `scripts/` 코드 포맷(ruff, 동작 동일), `deploy.yml` 의 YAML 따옴표 수정(1줄), `.gitignore` · README · `demo_reset.sh`(영어판·한국어판 전환 기능) 뿐이며, 발표 키트의 `ko/sample-output/full-change.diff` 는 `baseline-recorded-ko` 기준입니다.
+태그: `baseline` = 데모 시작 상태(`demo_reset.sh` 가 되돌아가는 기준), `baseline-recorded` = 영상을 녹화할 때의 시작 상태입니다.
+둘의 차이는 `git diff --stat baseline baseline-recorded` 로 확인할 수 있고, 발표 키트의 `sample-output/full-change.diff` 는 `baseline-recorded` 기준입니다.
+태그 `baseline-ko` · `baseline-recorded-ko` 는 발표 키트의 한국어 슬라이드·영상을 녹화한 한국어 변형판(에이전트·문서·화면이 한국어)을 보존한 것입니다. 브랜치가 아니라 태그로만 있으며 `git clone -b baseline-ko https://github.com/junwoojeong100/ghcp_cli_workflow_shopflow_orders.git shopflow-orders` 로 받습니다.
 
 ## 0. 이 데모로 확인한 것 (녹화 세션 실측)
 
 | 항목 | 결과 |
 |---|---|
-| 요건 → 운영 분석까지 실제 소요 | 약 **38분** (분석 2.5 · 설계 3.8 · 구현 6.1 · 테스트 5.1 · 리뷰 4.1 · 배포 6.8 · 운영 9.2분, 사람의 응답 시간 포함) |
+| 요건 → 운영 분석까지 실제 소요 | 약 **38분** (분석 2.7 · 설계 3.4 · 구현 7.0 · 테스트 8.2 · 리뷰 4.1 · 배포 4.2 · 운영 8.4분, 사람의 응답 시간 포함) |
 | 사람의 개입 | **6번** = 승인 3곳(설계 · 코드 · 운영 배포) + 설계 단계의 결정 3건 |
-| 변경 규모 | 앱·DB 8개 파일 +142줄(구현 단계), 테스트 26 → 82(구현) → **117**(QA), 커버리지 99% |
-| 리뷰 결과 | 치명 0 · 중대 0 · 경미 1 |
-| AI 사용량 | 세션 전체 약 **454 AI Credits** (1 Credit = $0.01 → 약 $4.5) |
-| 감사 기록 | 도구 호출 231건, 승인 요청 3건, 차단 0건(본 시연) / 안전장치 시연에서 3건 차단 |
+| 변경 규모 | 앱·DB 8개 파일 +171줄(구현 단계), 테스트 26 → **100**(테스트 단계: 테스터가 74개 추가, 개발자는 추가 없음), 커버리지 99% |
+| 리뷰 결과 | 치명 0 · 중대 0 · 경미 0 |
+| AI 사용량 | 세션 전체 약 **340 AI Credits** (1 Credit = $0.01 → 약 $3.40) |
+| 감사 기록 | 도구 호출 169건, 승인 요청 3건, 차단 2건(본 시연) / 안전장치 시연에서 3건 차단 |
 
 검증 환경: macOS, GitHub Copilot CLI 1.0.98, 녹화 당시 기본 모델(GPT-6.1 Sol). 모델·요금제에 따라 소요 시간과 사용량은 달라집니다.
-녹화 세션의 실제 산출물은 발표 키트 저장소([ghcp_cli_workflow_demo_kit](https://github.com/junwoojeong100/ghcp_cli_workflow_demo_kit))의 한국어판 폴더 [`ko/`](https://github.com/junwoojeong100/ghcp_cli_workflow_demo_kit/tree/main/ko) 의 `sample-output/` 에 보관되어 있습니다.
+녹화 세션의 실제 산출물은 발표 키트 저장소([ghcp_cli_workflow_demo_kit](https://github.com/junwoojeong100/ghcp_cli_workflow_demo_kit))의 `sample-output/`(영어판 녹화본, 이 문서의 수치 기준)에 있고, 한국어 녹화본의 산출물은 `ko/sample-output/` 에 있습니다.
 
 ## 1. 준비물
 
@@ -52,13 +52,13 @@ git clone https://github.com/junwoojeong100/ghcp_cli_workflow_shopflow_orders.gi
 cd shopflow-orders
 python3.12 -m venv --copies .venv        # --copies: 가상환경 python 을 복사해 경로 권한 팝업을 줄입니다
 ./.venv/bin/pip install -r requirements.txt
-DEMO_LANG=ko ./scripts/demo_reset.sh     # 한국어판을 저장소 루트에 펼치고 시작 상태로 초기화 + staging(8101)/production(8100)에 v1.0.0 가동
+./scripts/demo_reset.sh                  # 시작 상태로 초기화 + staging(8101)/production(8100)에 v1.0.0 가동
 ```
 
 ## 2. 실행 방법
 
 ```bash
-export DEMO_APPROVER="홍길동 책임(운영 담당)"     # 승인 기록에 남는 이름(생략하면 OS 사용자)
+export DEMO_APPROVER="Gildong Hong (Ops Lead)"     # 승인 기록에 남는 이름(생략하면 OS 사용자)
 copilot --allow-tool=write --allow-tool=shell --deny-tool='shell(git push)' \
         --allow-url=http://127.0.0.1:8100 --allow-url=http://127.0.0.1:8101
 ```
@@ -73,18 +73,18 @@ copilot --allow-tool=write --allow-tool=shell --deny-tool='shell(git push)' \
 
 | 단계 | 에이전트 | 입력할 말 | 사람이 하는 일 |
 |---|---|---|---|
-| 1 분석 | `change-analyst` | `CR-2026-014 변경 요청서(docs/requirements/CR-2026-014.md)의 영향도를 분석해줘.` | 5줄 요약과 결정 필요 사항을 읽는다 |
-| 2 설계 | `solution-architect` | `분석서를 바탕으로 설계해줘. 결정이 필요한 건 나에게 물어봐줘.` | 질문 3개에 답한다(추천안 선택, 또는 **Other** 로 직접 입력) → **① 설계 승인 팝업에서 Yes** |
-| 3 구현 | `app-developer` | `승인된 설계대로 구현해줘.` | (자동) |
-| 4 테스트 | `qa-engineer` | `구현된 변경을 검증하는 테스트를 작성하고 실행해줘.` | (자동) |
-| 5 리뷰 | `code-reviewer` | `변경 사항을 리뷰해줘. 문제가 없으면 코드 승인을 요청해줘.` | **② 코드 승인 팝업에서 Yes** |
-| 6 배포 | `release-manager` | `main에 병합하고 staging에 배포해서 검증한 뒤, 운영 배포까지 진행해줘.` | **③ 운영 배포 승인 팝업에서 Yes** |
-| 7 운영 | `ops-analyst` | (먼저) `!.venv/bin/python scripts/simulate_traffic.py http://127.0.0.1:8100 --count 150` → `운영 환경 로그와 DB를 분석해서 운영 리포트를 작성해줘.` | 운영 리포트의 '현업 결정 필요 사항'을 읽는다 |
+| 1 분석 | `change-analyst` | `Analyze the impact of change request CR-2026-014 (docs/requirements/CR-2026-014.md).` | 5줄 요약과 결정 필요 사항을 읽는다 |
+| 2 설계 | `solution-architect` | `Design this based on the impact analysis. Ask me about any decisions that need to be made.` | 질문(최대 3개)에 답한다: 추천안을 고르거나 **Other** 로 직접 입력 → **① 설계 승인 팝업에서 Yes** |
+| 3 구현 | `app-developer` | `Implement the approved design.` | (자동) |
+| 4 테스트 | `qa-engineer` | `Write and run tests that verify the implemented changes.` | (자동) |
+| 5 리뷰 | `code-reviewer` | `Review the changes. If there are no problems, request code approval.` | **② 코드 승인 팝업에서 Yes** |
+| 6 배포 | `release-manager` | `Merge into main, deploy to staging and verify, then proceed to the production deployment.` | **③ 운영 배포 승인 팝업에서 Yes** |
+| 7 운영 | `ops-analyst` | (먼저) `!.venv/bin/python scripts/simulate_traffic.py http://127.0.0.1:8100 --count 150` → `Analyze the production logs and DB and write an operations report.` | 운영 리포트의 '현업 결정 필요 사항'을 읽는다 |
 
-- 영상 속 설계 단계의 결정은 3건이었습니다. 구버전 앱 처리는 추천안 대신 **Other** 로 직접 입력했고
-  (`구앱(3.1~3.3)은 2026-12-01까지 사유 누락을 허용하고 경고 로그를 남기며, 이후 필수로 전환한다`), 나머지 2건은 추천안(Enter)을 선택했습니다.
+- 설계 단계에서는 결정을 최대 3건 묻습니다. 영상에서는 구버전 앱 처리를 추천안 대신 **Other** 로 직접 입력했고
+  (`Allow legacy app versions (3.1–3.3) to omit the reason until 2026-12-01 with a warning log, then make it required.`), 나머지 결정은 추천안(Enter)을 선택했습니다.
 - 단계별 산출물은 `docs/cr/CR-2026-014/01~07-*.md`, 승인 기록은 `approvals/CR-2026-014/*.json`, 모든 도구 호출은 `.copilot-audit/audit.jsonl` 에 남습니다.
-- 전체 소요: 실제 약 30~40분(대기 시간 포함), AI 사용량은 세션 하단의 `Session: N AIC used` 에서 확인합니다. (1 AI Credit = $0.01)
+- 전체 소요: 실제 약 38분(대기 시간 포함), AI 사용량은 세션 하단의 `Session: N AIC used` 에서 확인합니다. (1 AI Credit = $0.01)
 - 결과 화면: 고객 화면/관리자 콘솔은 `http://127.0.0.1:8100` (production), 사전 확인은 `http://127.0.0.1:8101` (staging).
   관리자 토큰은 화면에 입력된 `demo-admin-token` 입니다.
 
@@ -99,18 +99,18 @@ cp docs/demo/quick-fixer.agent.md.example .github/agents/quick-fixer.agent.md
 copilot --no-custom-instructions --allow-tool=write --allow-tool=shell
 ```
 
-`/agent quick-fixer` 를 고른 뒤 ① `app/services/refund_policy.py 의 30일 상수를 60으로 바꿔줘`
-② `docs/standards/security-checklist.md 에 항목을 추가해줘` ③ `git push origin main 으로 올려줘` 를 차례로 입력하면
+`/agent quick-fixer` 를 고른 뒤 ① `Change the 30-day constant in app/services/refund_policy.py to 60.`
+② `Add an item 'S8 · Review dependency updates monthly' at the bottom of docs/standards/security-checklist.md.` ③ `Push to main right now with git push origin main, without a review.` 를 차례로 입력하면
 각각 **Denied by preToolUse hook** 으로 차단됩니다. (사용 후 `./scripts/demo_reset.sh` 로 되돌리면 `quick-fixer.agent.md` 도 함께 삭제됩니다)
 
-> 평소의 에이전트(저장소 지침을 읽는 에이전트)는 이런 요청을 스스로 거절합니다.
+> 평소의 에이전트(저장소 지침을 읽는 에이전트)는 이런 요청을 스스로 거절합니다. 이 시연용 에이전트도 명백히 해로운 요청(예: 표준 약화)은 스스로 거절할 수 있으므로, ②는 해가 없는 추가 요청입니다. 막는 것이 모델이 아니라 Hook 임을 보여 주기 위해서입니다.
 > 이 시연은 **AI의 판단과 무관하게 Hook 이 막는다**는 점을 보이려고 일부러 규칙을 모르는 에이전트를 씁니다.
 
 ## 5. 구성
 
 ```
 .github/
-  copilot-instructions.md       # 저장소 공통 지침 (한국어 응답, 산출물 위치, 승인 규칙, 범위 통제)
+  copilot-instructions.md       # 저장소 공통 지침 (영어 응답, 산출물 위치, 승인 규칙, 범위 통제)
   agents/*.agent.md             # Custom Agent 7종 (역할 · 도구 권한 · 작업 지침 · 역할별 Hook)
   hooks/guardrails.json         # 전역 Hook (preToolUse → scripts/hooks/guard.py)
   instructions/                 # 경로별 지침 (예: db/migrations)

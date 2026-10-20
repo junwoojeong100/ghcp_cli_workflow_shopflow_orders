@@ -14,16 +14,16 @@ and **humans approve in only 3 places (design · code · production deploy)**.
 | **[ghcp_cli_workflow_shopflow_orders](https://github.com/junwoojeong100/ghcp_cli_workflow_shopflow_orders)** (this repository) | **The demo target** — demo app · 7 custom agents · hooks · CI/Deploy samples. Reproduce the same flow yourself with the scripts below |
 | **[ghcp_cli_workflow_demo_kit](https://github.com/junwoojeong100/ghcp_cli_workflow_demo_kit)** | **Presentation kit** — presentation guide · video/slide production source · the actual outputs of the recorded session (`sample-output/`). The slides (PPTX) and videos (MP4) are in [Releases](https://github.com/junwoojeong100/ghcp_cli_workflow_demo_kit/releases) |
 
-This is the **English (default) edition**. The **Korean edition** (agents, documents and screens all in Korean) is part of this repository too, on the same single `main` branch: browse it in the [`ko/`](ko/) folder, and run it with `DEMO_LANG=ko ./scripts/demo_reset.sh` (Korean guide: [README.ko.md](README.ko.md)).
-Only one edition is checked out at a time: the reset command puts the edition you choose at the repository root, so `ko/` is not in your working tree while a demo runs and the AI agents never see the other edition. To switch back, run `DEMO_LANG=en ./scripts/demo_reset.sh`.
+This repository has a **single `main` branch and one code base** (the agents, documents and screens are in English). Only this guide comes in two languages: **English** (this file, the default) and **Korean** ([README.ko.md](README.ko.md)).
 The presentation kit has English slides and videos by default; the Korean edition is under its [`ko/` folder](https://github.com/junwoojeong100/ghcp_cli_workflow_demo_kit/tree/main/ko).
 
 **Watch in your browser (no download):** English [full video](https://junwoojeong100.github.io/ghcp_cli_workflow_demo_kit/video/GHCP_CLI_Workflow_Demo_EN.mp4) · [slides](https://view.officeapps.live.com/op/view.aspx?src=https%3A%2F%2Fjunwoojeong100.github.io%2Fghcp_cli_workflow_demo_kit%2FGHCP_CLI_Workflow_Demo_EN.pptx) — Korean [full video](https://junwoojeong100.github.io/ghcp_cli_workflow_demo_kit/ko/video/GHCP_CLI_Workflow_Demo_KO.mp4) · [slides](https://view.officeapps.live.com/op/view.aspx?src=https%3A%2F%2Fjunwoojeong100.github.io%2Fghcp_cli_workflow_demo_kit%2Fko%2FGHCP_CLI_Workflow_Demo_KO.pptx). Per-step clips and chapter links are in the [presentation kit README](https://github.com/junwoojeong100/ghcp_cli_workflow_demo_kit#watch-online--no-download).
 
 The kit's tools look for this repository in a folder named **`shopflow-orders`**. To use them together with the kit, clone with an explicit folder name (see chapter 1 below).
 
-Tags: `baseline` = the English demo start state (the state `demo_reset.sh` returns to), `baseline-recorded` = the start state when the English video was recorded. The Korean edition uses `baseline-ko` / `baseline-recorded-ko`.
-`baseline` differs from `baseline-recorded` only in the README files and `demo_reset.sh` (the edition switch): `git diff --stat baseline-recorded baseline`. `sample-output/full-change.diff` in the presentation kit is based on `baseline-recorded`.
+Tags: `baseline` = the demo start state (the state `demo_reset.sh` returns to), `baseline-recorded` = the start state when the video was recorded.
+To see exactly what differs between the two, run `git diff --stat baseline baseline-recorded`. `sample-output/full-change.diff` in the presentation kit is based on `baseline-recorded`.
+The tags `baseline-ko` and `baseline-recorded-ko` keep the Korean-language variant of the demo (Korean agents, documents and screens) on which the Korean slides and video of the presentation kit were recorded. They are tags only, not a branch: `git clone -b baseline-ko https://github.com/junwoojeong100/ghcp_cli_workflow_shopflow_orders.git shopflow-orders`.
 
 ## 0. What this demo verified (measured in a recorded session)
 
@@ -53,7 +53,6 @@ cd shopflow-orders
 python3.12 -m venv --copies .venv        # --copies: copies the venv python, which reduces path-permission pop-ups
 ./.venv/bin/pip install -r requirements.txt
 ./scripts/demo_reset.sh                  # reset to the start state + start v1.0.0 on staging (8101) / production (8100)
-# Korean edition instead:  DEMO_LANG=ko ./scripts/demo_reset.sh
 ```
 
 ## 2. How to run
